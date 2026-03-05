@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>佐々木のデザイナーワークスペース</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            sidebar: {
+              bg: '#0f0f1a',
+              hover: '#1a1a2e',
+              active: '#1e1b4b',
+              border: '#1e1e3a',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="bg-gray-950 text-gray-100 font-sans antialiased">
+
+  <!-- ========== SIDEBAR ========== -->
+  <aside id="sidebar"
+    class="fixed left-0 top-0 h-screen w-64 flex flex-col z-40 transition-transform duration-300
+           bg-[#0f0f1a] border-r border-[#1e1e3a]">
+
+    <!-- Brand -->
+    <div class="px-5 py-6 border-b border-[#1e1e3a]">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center
+                    bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30">
+          <i class="fas fa-palette text-white text-sm"></i>
+        </div>
+        <div>
+          <p class="text-[11px] text-indigo-400 font-semibold tracking-widest uppercase">Workspace</p>
+          <p class="text-xs text-gray-500">佐々木 / Designer</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+
+      <p class="text-[10px] font-semibold text-gray-600 uppercase tracking-widest px-3 mb-2">メニュー</p>
+
+      <a href="#" class="nav-link active" data-page="home">
+        <span class="nav-icon"><i class="fas fa-home"></i></span>
+        <span>ホーム</span>
+      </a>
+
+      <a href="#" class="nav-link" data-page="projects">
+        <span class="nav-icon"><i class="fas fa-briefcase"></i></span>
+        <span>デザイン案件管理</span>
+      </a>
+
+      <a href="#" class="nav-link" data-page="school">
+        <span class="nav-icon"><i class="fas fa-graduation-cap"></i></span>
+        <span>スクール課題管理</span>
+      </a>
+
+      <a href="#" class="nav-link" data-page="notes">
+        <span class="nav-icon"><i class="fas fa-book-open"></i></span>
+        <span>学習ノート</span>
+      </a>
+
+      <a href="#" class="nav-link" data-page="tasks">
+        <span class="nav-icon"><i class="fas fa-check-circle"></i></span>
+        <span>タスク / ToDo</span>
+      </a>
+
+      <a href="#" class="nav-link" data-page="ideas">
+        <span class="nav-icon"><i class="fas fa-lightbulb"></i></span>
+        <span>アイデア・SNS</span>
+      </a>
+
+      <a href="#" class="nav-link" data-page="income">
+        <span class="nav-icon"><i class="fas fa-yen-sign"></i></span>
+        <span>収入管理</span>
+      </a>
+
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="px-5 py-4 border-t border-[#1e1e3a]">
+      <p class="text-[11px] text-gray-600 text-center">v1.0.0 · Designer Workspace</p>
+    </div>
+  </aside>
+
+  <!-- ========== MAIN WRAPPER ========== -->
+  <div class="ml-64 flex flex-col min-h-screen">
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-30 flex items-center justify-between
+                   px-6 py-4 h-16
+                   bg-gray-950/80 backdrop-blur-md
+                   border-b border-[#1e1e3a]">
+
+      <!-- Left: Mobile hamburger + Page title -->
+      <div class="flex items-center gap-4">
+        <!-- Mobile toggle (hidden on desktop) -->
+        <button id="mobileMenuBtn"
+          class="lg:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-[#1a1a2e] transition">
+          <i class="fas fa-bars"></i>
+        </button>
+
+        <div>
+          <h1 class="text-base font-bold text-white leading-tight tracking-tight">
+            佐々木のデザイナーワークスペース
+          </h1>
+          <p id="pageSubtitle" class="text-[11px] text-gray-500">ホーム</p>
+        </div>
+      </div>
+
+      <!-- Right: Date + Dark mode toggle + Avatar -->
+      <div class="flex items-center gap-3">
+        <span id="headerDate" class="hidden sm:block text-xs text-gray-500"></span>
+
+        <!-- Dark mode toggle -->
+        <button id="darkToggle"
+          title="ダークモード切替"
+          class="p-2 rounded-xl bg-[#1a1a2e] text-yellow-400 hover:bg-[#252540] transition">
+          <i class="fas fa-sun text-sm"></i>
+        </button>
+
+        <!-- Avatar -->
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white
+                    bg-gradient-to-br from-indigo-400 to-purple-500">
+          S
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main id="mainContent" class="flex-1 p-6">
+      <!-- ページコンテンツはここに動的に挿入されます -->
+      <div id="pageArea" class="page-enter">
+        <!-- placeholder: home will render here -->
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Mobile overlay -->
+  <div id="overlay"
+    class="fixed inset-0 bg-black/60 z-30 hidden"
+    onclick="closeSidebar()">
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
