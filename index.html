@@ -5,44 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>佐々木のデザイナーワークスペース</title>
 
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
-          }
-        }
-      }
+      theme: { extend: { fontFamily: { sans: ['Inter', 'Noto Sans JP', 'sans-serif'] } } }
     }
   </script>
 
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
-
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
   <style>
-    /* Scrollbar */
+    /* ── Scrollbar ── */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #312e81; border-radius: 4px; }
 
-    /* Sidebar nav links */
+    /* ── Sidebar nav ── */
     .nav-link {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 12px;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: #6b7280;
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 10px;
+      font-size: 0.85rem; font-weight: 500; color: #6b7280;
       text-decoration: none;
       transition: background 0.15s ease, color 0.15s ease;
     }
@@ -54,28 +39,27 @@
     }
     .nav-icon { width: 20px; text-align: center; font-size: 0.85rem; flex-shrink: 0; }
 
-    /* Page transition */
+    /* ── Page transition ── */
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(14px); }
       to   { opacity: 1; transform: translateY(0); }
     }
     .page-enter { animation: fadeInUp 0.28s ease forwards; }
 
-    /* Mobile sidebar */
+    /* ── Mobile sidebar ── */
     @media (max-width: 1023px) {
       #sidebar { transform: translateX(-100%); }
       #sidebar.open { transform: translateX(0); }
       .ml-64 { margin-left: 0 !important; }
     }
 
-    /* Light mode overrides */
+    /* ── Light mode ── */
     html:not(.dark) body { background-color: #f8fafc; color: #1e293b; }
     html:not(.dark) #sidebar { background: #ffffff; border-color: #e2e8f0; }
     html:not(.dark) header { background: rgba(255,255,255,0.85); border-color: #e2e8f0; }
     html:not(.dark) .nav-link { color: #64748b; }
     html:not(.dark) .nav-link:hover { background: #eef2ff; color: #4f46e5; }
-    html:not(.dark) #pageSubtitle,
-    html:not(.dark) #headerDate { color: #94a3b8; }
+    html:not(.dark) #pageSubtitle, html:not(.dark) #headerDate { color: #94a3b8; }
     html:not(.dark) .card-surface { background: #ffffff !important; border-color: #e2e8f0 !important; }
     html:not(.dark) .card-surface:hover { border-color: #a5b4fc !important; }
     html:not(.dark) .recent-section { background: #ffffff !important; border-color: #e2e8f0 !important; }
@@ -83,6 +67,44 @@
     html:not(.dark) .recent-item:hover { background: #f8fafc !important; }
     html:not(.dark) .text-main { color: #1e293b !important; }
     html:not(.dark) .text-sub { color: #64748b !important; }
+
+    /* ── Drawer tab buttons ── */
+    .tab-btn {
+      padding: 11px 14px; font-size: 0.8rem; font-weight: 500;
+      color: #6b7280; border-bottom: 2px solid transparent;
+      margin-bottom: -1px; white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s;
+      background: transparent;
+    }
+    .tab-btn:hover { color: #a5b4fc; }
+    .tab-btn.active-tab { color: #818cf8; border-bottom-color: #818cf8; }
+
+    /* ── Drawer form inputs ── */
+    .dw-input {
+      background: #13111e; border: 1px solid #2a2545; border-radius: 0.75rem;
+      padding: 8px 12px; font-size: 0.875rem; color: #e5e7eb;
+      outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+      font-family: inherit; width: 100%;
+    }
+    .dw-input:focus {
+      border-color: rgba(99,102,241,0.6);
+      box-shadow: 0 0 0 1px rgba(99,102,241,0.25);
+    }
+    .dw-textarea {
+      background: #13111e; border: 1px solid #2a2545; border-radius: 0.75rem;
+      padding: 12px; font-size: 0.875rem; color: #e5e7eb;
+      width: 100%; height: 260px; resize: vertical;
+      outline: none; transition: border-color 0.15s;
+      font-family: inherit; line-height: 1.6;
+    }
+    .dw-textarea:focus { border-color: rgba(99,102,241,0.6); }
+    .dw-textarea::placeholder, .dw-input::placeholder { color: #4b5563; }
+
+    /* ── Date input dark calendar icon ── */
+    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+    select.dw-input option { background: #1c1930; }
   </style>
 </head>
 
@@ -93,7 +115,6 @@
     class="fixed left-0 top-0 h-screen w-64 flex flex-col z-40 transition-transform duration-300
            bg-[#0f0f1a] border-r border-[#1e1e3a]">
 
-    <!-- Brand -->
     <div class="px-5 py-6 border-b border-[#1e1e3a]">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl flex items-center justify-center
@@ -107,41 +128,31 @@
       </div>
     </div>
 
-    <!-- Navigation -->
     <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
       <p class="text-[10px] font-semibold text-gray-600 uppercase tracking-widest px-3 mb-2">メニュー</p>
-
       <a href="#" class="nav-link active" data-page="home">
-        <span class="nav-icon"><i class="fas fa-home"></i></span>
-        <span>ホーム</span>
+        <span class="nav-icon"><i class="fas fa-home"></i></span><span>ホーム</span>
       </a>
       <a href="#" class="nav-link" data-page="projects">
-        <span class="nav-icon"><i class="fas fa-briefcase"></i></span>
-        <span>デザイン案件管理</span>
+        <span class="nav-icon"><i class="fas fa-briefcase"></i></span><span>デザイン案件管理</span>
       </a>
       <a href="#" class="nav-link" data-page="school">
-        <span class="nav-icon"><i class="fas fa-graduation-cap"></i></span>
-        <span>スクール課題管理</span>
+        <span class="nav-icon"><i class="fas fa-graduation-cap"></i></span><span>スクール課題管理</span>
       </a>
       <a href="#" class="nav-link" data-page="notes">
-        <span class="nav-icon"><i class="fas fa-book-open"></i></span>
-        <span>学習ノート</span>
+        <span class="nav-icon"><i class="fas fa-book-open"></i></span><span>学習ノート</span>
       </a>
       <a href="#" class="nav-link" data-page="tasks">
-        <span class="nav-icon"><i class="fas fa-check-circle"></i></span>
-        <span>タスク / ToDo</span>
+        <span class="nav-icon"><i class="fas fa-check-circle"></i></span><span>タスク / ToDo</span>
       </a>
       <a href="#" class="nav-link" data-page="ideas">
-        <span class="nav-icon"><i class="fas fa-lightbulb"></i></span>
-        <span>アイデア・SNS</span>
+        <span class="nav-icon"><i class="fas fa-lightbulb"></i></span><span>アイデア・SNS</span>
       </a>
       <a href="#" class="nav-link" data-page="income">
-        <span class="nav-icon"><i class="fas fa-yen-sign"></i></span>
-        <span>収入管理</span>
+        <span class="nav-icon"><i class="fas fa-yen-sign"></i></span><span>収入管理</span>
       </a>
     </nav>
 
-    <!-- Sidebar Footer -->
     <div class="px-5 py-4 border-t border-[#1e1e3a]">
       <p class="text-[11px] text-gray-600 text-center">v1.0.0 · Designer Workspace</p>
     </div>
@@ -150,12 +161,8 @@
   <!-- ========== MAIN WRAPPER ========== -->
   <div class="ml-64 flex flex-col min-h-screen">
 
-    <!-- HEADER -->
     <header class="sticky top-0 z-30 flex items-center justify-between
-                   px-6 py-4 h-16
-                   bg-gray-950/80 backdrop-blur-md
-                   border-b border-[#1e1e3a]">
-
+                   px-6 py-4 h-16 bg-gray-950/80 backdrop-blur-md border-b border-[#1e1e3a]">
       <div class="flex items-center gap-4">
         <button id="mobileMenuBtn"
           class="lg:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-[#1a1a2e] transition">
@@ -168,7 +175,6 @@
           <p id="pageSubtitle" class="text-[11px] text-gray-500">ホーム</p>
         </div>
       </div>
-
       <div class="flex items-center gap-3">
         <span id="headerDate" class="hidden sm:block text-xs text-gray-500"></span>
         <button id="darkToggle" title="ダークモード切替"
@@ -176,23 +182,18 @@
           <i class="fas fa-sun text-sm"></i>
         </button>
         <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white
-                    bg-gradient-to-br from-indigo-400 to-purple-500">
-          S
-        </div>
+                    bg-gradient-to-br from-indigo-400 to-purple-500">S</div>
       </div>
     </header>
 
-    <!-- MAIN CONTENT -->
     <main id="mainContent" class="flex-1 p-6">
       <div id="pageArea" class="page-enter">
 
         <!-- ===== HOME DASHBOARD ===== -->
         <div class="space-y-6">
 
-          <!-- サマリーカード 4枚 -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
-            <!-- 1: 今日のタスク -->
             <div class="card-surface bg-[#1c1930] border border-[#2a2545] rounded-2xl p-5
                         flex flex-col gap-4 hover:border-indigo-500/50 transition-colors cursor-default">
               <div class="flex items-start justify-between">
@@ -211,7 +212,6 @@
               </div>
             </div>
 
-            <!-- 2: 進行中案件 -->
             <div class="card-surface bg-[#1c1930] border border-[#2a2545] rounded-2xl p-5
                         flex flex-col gap-4 hover:border-blue-500/50 transition-colors cursor-default">
               <div class="flex items-start justify-between">
@@ -230,7 +230,6 @@
               </div>
             </div>
 
-            <!-- 3: 今月の収入合計 -->
             <div class="card-surface bg-[#1c1930] border border-[#2a2545] rounded-2xl p-5
                         flex flex-col gap-4 hover:border-purple-500/50 transition-colors cursor-default">
               <div class="flex items-start justify-between">
@@ -249,7 +248,6 @@
               </div>
             </div>
 
-            <!-- 4: 学習ログ -->
             <div class="card-surface bg-[#1c1930] border border-[#2a2545] rounded-2xl p-5
                         flex flex-col gap-4 hover:border-teal-500/50 transition-colors cursor-default">
               <div class="flex items-start justify-between">
@@ -270,9 +268,8 @@
               </div>
             </div>
 
-          </div><!-- /grid -->
+          </div>
 
-          <!-- 最近の更新 -->
           <div class="recent-section bg-[#1c1930] border border-[#2a2545] rounded-2xl overflow-hidden">
             <div class="px-5 py-4 border-b border-[#2a2545] flex items-center justify-between">
               <div class="flex items-center gap-2">
@@ -283,7 +280,8 @@
             </div>
             <ul>
               <li class="recent-item flex items-center gap-4 px-5 py-4 border-b recent-divider border-[#2a2545] hover:bg-white/[0.025] transition-colors">
-                <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md shadow-blue-500/20">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
+                            bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md shadow-blue-500/20">
                   <i class="fas fa-briefcase text-white text-xs"></i>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -293,7 +291,8 @@
                 <span class="text-xs text-gray-600 flex-shrink-0">2時間前</span>
               </li>
               <li class="recent-item flex items-center gap-4 px-5 py-4 border-b recent-divider border-[#2a2545] hover:bg-white/[0.025] transition-colors">
-                <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-purple-500 to-pink-600 shadow-md shadow-purple-500/20">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
+                            bg-gradient-to-br from-purple-500 to-pink-600 shadow-md shadow-purple-500/20">
                   <i class="fas fa-graduation-cap text-white text-xs"></i>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -303,7 +302,8 @@
                 <span class="text-xs text-gray-600 flex-shrink-0">昨日</span>
               </li>
               <li class="recent-item flex items-center gap-4 px-5 py-4 hover:bg-white/[0.025] transition-colors">
-                <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-teal-500 to-cyan-600 shadow-md shadow-teal-500/20">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
+                            bg-gradient-to-br from-teal-500 to-cyan-600 shadow-md shadow-teal-500/20">
                   <i class="fas fa-book-open text-white text-xs"></i>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -315,23 +315,150 @@
             </ul>
           </div>
 
-        </div><!-- /space-y-6 HOME -->
+        </div>
         <!-- ===== /HOME DASHBOARD ===== -->
 
-      </div><!-- /pageArea -->
+      </div>
     </main>
+  </div>
 
-  </div><!-- /main wrapper -->
-
-  <!-- Mobile overlay -->
+  <!-- Mobile sidebar overlay -->
   <div id="overlay" class="fixed inset-0 bg-black/60 z-30 hidden" onclick="closeSidebar()"></div>
+
+  <!-- ========== DRAWER OVERLAY ========== -->
+  <div id="drawerOverlay"
+    class="fixed inset-0 bg-black/60 z-[60] hidden backdrop-blur-sm"
+    onclick="closeDrawer()"></div>
+
+  <!-- ========== DRAWER PANEL ========== -->
+  <div id="drawer"
+    class="fixed top-0 right-0 h-full w-full sm:max-w-2xl
+           bg-[#0f0f1a] border-l border-[#2a2545]
+           z-[70] flex flex-col
+           translate-x-full transition-transform duration-300 ease-out
+           shadow-2xl shadow-black/60">
+
+    <!-- Drawer header -->
+    <div class="flex items-start justify-between px-6 py-5 border-b border-[#2a2545] flex-shrink-0">
+      <div class="flex-1 min-w-0 pr-4">
+        <p class="text-[10px] text-indigo-400 font-semibold uppercase tracking-widest mb-1">案件詳細</p>
+        <h2 id="drawerTitle" class="text-base font-bold text-white truncate">—</h2>
+      </div>
+      <button onclick="closeDrawer()"
+        class="p-2 rounded-xl text-gray-500 hover:text-white hover:bg-[#1a1a2e] transition flex-shrink-0">
+        <i class="fas fa-xmark text-base"></i>
+      </button>
+    </div>
+
+    <!-- Editable fields -->
+    <div class="px-6 py-4 border-b border-[#2a2545] flex-shrink-0 grid grid-cols-2 gap-3">
+      <div class="col-span-2 sm:col-span-1">
+        <label class="block text-[10px] text-gray-600 uppercase tracking-wider mb-1.5">クライアント</label>
+        <input id="drawerClient" type="text" class="dw-input" />
+      </div>
+      <div class="col-span-2 sm:col-span-1">
+        <label class="block text-[10px] text-gray-600 uppercase tracking-wider mb-1.5">プロジェクト名</label>
+        <input id="drawerName" type="text" class="dw-input" />
+      </div>
+      <div>
+        <label class="block text-[10px] text-gray-600 uppercase tracking-wider mb-1.5">ステータス</label>
+        <select id="drawerStatus" class="dw-input">
+          <option value="企画">企画</option>
+          <option value="デザイン中">デザイン中</option>
+          <option value="レビュー中">レビュー中</option>
+          <option value="納品済み">納品済み</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-[10px] text-gray-600 uppercase tracking-wider mb-1.5">納期</label>
+        <input id="drawerDue" type="date" class="dw-input" />
+      </div>
+      <div class="col-span-2">
+        <label class="block text-[10px] text-gray-600 uppercase tracking-wider mb-1.5">予算（円）</label>
+        <input id="drawerBudget" type="number" class="dw-input" />
+      </div>
+    </div>
+
+    <!-- Tab navigation -->
+    <div class="flex border-b border-[#2a2545] px-3 flex-shrink-0 overflow-x-auto">
+      <button id="tabBtn-memo"   onclick="switchTab('memo')"   class="tab-btn active-tab">メモ</button>
+      <button id="tabBtn-draft"  onclick="switchTab('draft')"  class="tab-btn">構成案</button>
+      <button id="tabBtn-script" onclick="switchTab('script')" class="tab-btn">プレゼン台本</button>
+      <button id="tabBtn-refs"   onclick="switchTab('refs')"   class="tab-btn">参考資料</button>
+    </div>
+
+    <!-- Tab content -->
+    <div class="flex-1 overflow-y-auto p-5">
+
+      <!-- メモ -->
+      <div id="tab-memo">
+        <textarea id="drawerMemo" class="dw-textarea"
+          placeholder="自由にメモを書いてください…&#10;クライアントとのやりとり、要件、懸念事項など"></textarea>
+      </div>
+
+      <!-- 構成案 -->
+      <div id="tab-draft" class="hidden">
+        <textarea id="drawerDraft" class="dw-textarea"
+          placeholder="サイト・資料の構成案を書いてください…&#10;例）TOP / About / Service / Works / Contact"></textarea>
+      </div>
+
+      <!-- プレゼン台本 -->
+      <div id="tab-script" class="hidden">
+        <textarea id="drawerScript" class="dw-textarea"
+          placeholder="プレゼンテーションの台本を書いてください…&#10;スライドごとに話す内容を整理しましょう"></textarea>
+      </div>
+
+      <!-- 参考資料 -->
+      <div id="tab-refs" class="hidden">
+
+        <!-- Add form -->
+        <div class="bg-[#1c1930] border border-[#2a2545] rounded-xl p-4 mb-4">
+          <p class="text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-3">
+            <i class="fas fa-plus mr-1"></i>資料を追加
+          </p>
+          <div class="space-y-2">
+            <input id="refTitle" type="text" placeholder="タイトル（例：参考デザイン）" class="dw-input" />
+            <input id="refUrl"   type="url"  placeholder="https://..." class="dw-input" />
+          </div>
+          <button onclick="addRef()"
+            class="mt-3 w-full py-2 rounded-lg text-xs font-semibold
+                   bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30
+                   border border-indigo-500/20 transition-colors">
+            <i class="fas fa-plus mr-1"></i>追加する
+          </button>
+        </div>
+
+        <!-- Refs list -->
+        <div id="refsList"></div>
+
+      </div>
+    </div>
+
+    <!-- Footer / actions -->
+    <div class="px-6 py-4 border-t border-[#2a2545] flex items-center justify-between gap-3 flex-shrink-0">
+      <button onclick="closeDrawer()"
+        class="px-4 py-2 rounded-xl text-sm font-medium text-gray-500
+               hover:text-gray-200 hover:bg-[#1a1a2e] transition-colors">
+        キャンセル
+      </button>
+      <button onclick="saveDrawer()"
+        class="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold
+               bg-gradient-to-r from-indigo-500 to-purple-600
+               hover:from-indigo-400 hover:to-purple-500
+               text-white shadow-lg shadow-indigo-500/25 transition-all">
+        <i class="fas fa-floppy-disk"></i>保存する
+      </button>
+    </div>
+
+  </div>
+  <!-- ========== /DRAWER ========== -->
 
   <script>
     /* ============================================================
        Designer Workspace — script
        ============================================================ */
 
-    // ---- Page meta ----
+    // ── Page meta ──────────────────────────────────────────────
     const PAGE_META = {
       home:     { label: 'ホーム',           subtitle: 'ダッシュボード' },
       projects: { label: 'デザイン案件管理', subtitle: 'プロジェクトの進捗を管理' },
@@ -342,96 +469,155 @@
       income:   { label: '収入管理',         subtitle: '売上と収入を把握' },
     };
 
-    // ---- Projects data ----
-    const PROJECTS = [
+    // ── Projects default data ──────────────────────────────────
+    const DEFAULT_PROJECTS = [
       {
-        client:  '株式会社テクノフロー',
-        name:    'コーポレートサイトリニューアル',
-        due:     '2026-03-20',
-        status:  'デザイン中',
-        budget:  350000,
+        client: '株式会社テクノフロー',
+        name:   'コーポレートサイトリニューアル',
+        due:    '2026-03-20',
+        status: 'デザイン中',
+        budget: 350000,
+        memo:   'TOPページのビジュアルはクライアント指定のブルー系で統一。\nスマホ対応必須。レスポンシブ確認は毎回行うこと。',
+        draft:  'TOP / About / Service / Works / Contact\n各ページにCTAボタンを配置。Worksは最新5件を表示。',
+        script: '',
+        refs:   [{ title: 'Awwwards — デザイン参考', url: 'https://www.awwwards.com' }],
       },
       {
-        client:  'フリーランス 佐藤様',
-        name:    'ロゴ・名刺デザイン',
-        due:     '2026-03-10',
-        status:  'レビュー中',
-        budget:  80000,
+        client: 'フリーランス 佐藤様',
+        name:   'ロゴ・名刺デザイン',
+        due:    '2026-03-10',
+        status: 'レビュー中',
+        budget: 80000,
+        memo:   'ミニマルで洗練されたデザインを希望。カラーは黒・金・白の3色。',
+        draft:  '',
+        script: '',
+        refs:   [],
       },
       {
-        client:  '合同会社グリーンラボ',
-        name:    'ECサイト バナー制作',
-        due:     '2026-04-05',
-        status:  '企画',
-        budget:  120000,
+        client: '合同会社グリーンラボ',
+        name:   'ECサイト バナー制作',
+        due:    '2026-04-05',
+        status: '企画',
+        budget: 120000,
+        memo:   '',
+        draft:  '',
+        script: '',
+        refs:   [],
       },
       {
-        client:  '株式会社ミライデザイン',
-        name:    'ブランドガイドライン策定',
-        due:     '2026-02-28',
-        status:  '納品済み',
-        budget:  500000,
+        client: '株式会社ミライデザイン',
+        name:   'ブランドガイドライン策定',
+        due:    '2026-02-28',
+        status: '納品済み',
+        budget: 500000,
+        memo:   '納品完了。フィードバックは全て反映済み。アーカイブとして保存。',
+        draft:  '',
+        script: '',
+        refs:   [],
       },
       {
-        client:  '個人 山田様',
-        name:    'SNSアイコン・ヘッダー',
-        due:     '2026-03-15',
-        status:  'デザイン中',
-        budget:  45000,
+        client: '個人 山田様',
+        name:   'SNSアイコン・ヘッダー',
+        due:    '2026-03-15',
+        status: 'デザイン中',
+        budget: 45000,
+        memo:   'Twitter・Instagram用アイコン（丸形）。プロフィールページで映える明るいトーンで。',
+        draft:  '',
+        script: '',
+        refs:   [{ title: 'Dribbble — インスピレーション', url: 'https://dribbble.com' }],
       },
     ];
 
-    // ---- Status badge config ----
+    // ── localStorage helpers ────────────────────────────────────
+    function loadProjectsFromStorage() {
+      try {
+        const raw = localStorage.getItem('dw_projects');
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      return null;
+    }
+
+    function saveProjectsToStorage() {
+      localStorage.setItem('dw_projects', JSON.stringify(PROJECTS));
+    }
+
+    // ── Projects array (localStorage priority) ─────────────────
+    let PROJECTS = loadProjectsFromStorage() || JSON.parse(JSON.stringify(DEFAULT_PROJECTS));
+
+    // ── Helpers ────────────────────────────────────────────────
     const STATUS_BADGE = {
-      '企画':      { bg: 'bg-slate-700/60',   text: 'text-slate-300',  dot: 'bg-slate-400'  },
-      'デザイン中': { bg: 'bg-indigo-500/15',  text: 'text-indigo-300', dot: 'bg-indigo-400' },
-      'レビュー中': { bg: 'bg-amber-500/15',   text: 'text-amber-300',  dot: 'bg-amber-400'  },
-      '納品済み':  { bg: 'bg-emerald-500/15', text: 'text-emerald-300',dot: 'bg-emerald-400'},
+      '企画':      { bg: 'bg-slate-700/60',   text: 'text-slate-300',   dot: 'bg-slate-400'   },
+      'デザイン中': { bg: 'bg-indigo-500/15', text: 'text-indigo-300',  dot: 'bg-indigo-400'  },
+      'レビュー中': { bg: 'bg-amber-500/15',  text: 'text-amber-300',   dot: 'bg-amber-400'   },
+      '納品済み':  { bg: 'bg-emerald-500/15', text: 'text-emerald-300', dot: 'bg-emerald-400' },
     };
 
     function statusBadge(status) {
       const s = STATUS_BADGE[status] || STATUS_BADGE['企画'];
       return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${s.bg} ${s.text}">
-        <span class="w-1.5 h-1.5 rounded-full ${s.dot}"></span>${status}
+        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.dot}"></span>${status}
       </span>`;
     }
 
     function fmtBudget(n) {
-      return '¥' + n.toLocaleString('ja-JP');
+      return '¥' + Number(n).toLocaleString('ja-JP');
     }
 
     function fmtDue(dateStr) {
       const d = new Date(dateStr);
-      const today = new Date();
-      today.setHours(0,0,0,0);
-      const diff = Math.ceil((d - today) / 86400000);
+      const today = new Date(); today.setHours(0,0,0,0);
+      const diff  = Math.ceil((d - today) / 86400000);
       const label = d.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
       if (diff < 0)  return `<span class="text-gray-500">${label}</span>`;
-      if (diff <= 3) return `<span class="text-red-400 font-semibold">${label} <span class="text-[10px]">(あと${diff}日)</span></span>`;
-      if (diff <= 7) return `<span class="text-amber-400">${label} <span class="text-[10px]">(あと${diff}日)</span></span>`;
+      if (diff <= 3) return `<span class="text-red-400 font-semibold">${label}<span class="text-[10px] ml-1">(あと${diff}日)</span></span>`;
+      if (diff <= 7) return `<span class="text-amber-400">${label}<span class="text-[10px] ml-1">(あと${diff}日)</span></span>`;
       return `<span class="text-gray-300">${label}</span>`;
     }
 
-    // ---- Render projects table rows ----
-    function buildProjectRows(list) {
-      if (list.length === 0) {
-        return `<tr><td colspan="5" class="px-6 py-10 text-center text-sm text-gray-600">
-          <i class="fas fa-inbox mb-2 text-2xl block"></i>該当する案件がありません
-        </td></tr>`;
-      }
-      return list.map(p => `
-        <tr class="border-b border-[#2a2545] hover:bg-white/[0.025] transition-colors">
-          <td class="px-5 py-4 text-sm text-gray-400 whitespace-nowrap">${p.client}</td>
-          <td class="px-5 py-4 text-sm text-gray-100 font-medium">${p.name}</td>
-          <td class="px-5 py-4 text-sm whitespace-nowrap">${fmtDue(p.due)}</td>
-          <td class="px-5 py-4 whitespace-nowrap">${statusBadge(p.status)}</td>
-          <td class="px-5 py-4 text-sm text-gray-300 whitespace-nowrap text-right">${fmtBudget(p.budget)}</td>
-        </tr>
-      `).join('');
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g,  '&amp;')
+        .replace(/</g,  '&lt;')
+        .replace(/>/g,  '&gt;')
+        .replace(/"/g,  '&quot;')
+        .replace(/'/g,  '&#39;');
     }
 
-    // ---- Search handler (called inline via oninput) ----
-    window.filterProjects = function(query) {
+    function safeUrl(url) {
+      try {
+        const u = new URL(url);
+        if (u.protocol === 'http:' || u.protocol === 'https:') return url;
+      } catch (e) {}
+      return '#';
+    }
+
+    // ── Table rows ─────────────────────────────────────────────
+    function buildProjectRows(list) {
+      if (list.length === 0) {
+        return `<tr><td colspan="5" class="px-6 py-12 text-center text-sm text-gray-600">
+          <i class="fas fa-inbox text-2xl block mb-2"></i>該当する案件がありません
+        </td></tr>`;
+      }
+      return list.map(p => {
+        const idx = PROJECTS.indexOf(p);
+        return `
+          <tr onclick="openDrawer(${idx})"
+            class="border-b border-[#2a2545] hover:bg-indigo-500/[0.05]
+                   transition-colors cursor-pointer group">
+            <td class="px-5 py-4 text-sm text-gray-400 whitespace-nowrap
+                        group-hover:text-gray-300 transition-colors">${escapeHtml(p.client)}</td>
+            <td class="px-5 py-4 text-sm text-gray-100 font-medium">
+              <span class="group-hover:text-indigo-300 transition-colors">${escapeHtml(p.name)}</span>
+            </td>
+            <td class="px-5 py-4 text-sm whitespace-nowrap">${fmtDue(p.due)}</td>
+            <td class="px-5 py-4 whitespace-nowrap">${statusBadge(p.status)}</td>
+            <td class="px-5 py-4 text-sm text-gray-300 whitespace-nowrap text-right">${fmtBudget(p.budget)}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    // ── Search ─────────────────────────────────────────────────
+    function filterProjects(query) {
       const q = query.trim().toLowerCase();
       const filtered = q
         ? PROJECTS.filter(p =>
@@ -439,24 +625,20 @@
             p.name.toLowerCase().includes(q)
           )
         : PROJECTS;
-      const tbody = document.getElementById('projectsTbody');
-      if (tbody) tbody.innerHTML = buildProjectRows(filtered);
-
-      const countEl = document.getElementById('projectsCount');
+      const tbody    = document.getElementById('projectsTbody');
+      const countEl  = document.getElementById('projectsCount');
+      if (tbody)   tbody.innerHTML = buildProjectRows(filtered);
       if (countEl) countEl.textContent = `${filtered.length} 件`;
-    };
+    }
 
-    // ---- Render projects page ----
+    // ── Render projects page ────────────────────────────────────
     function renderProjects() {
-      const rows = buildProjectRows(PROJECTS);
       return `
         <div class="space-y-5">
-
-          <!-- ページヘッダー行 -->
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h2 class="text-lg font-bold text-white">デザイン案件管理</h2>
-              <p class="text-xs text-gray-500 mt-0.5">進行中・完了案件の一覧</p>
+              <p class="text-xs text-gray-500 mt-0.5">進行中・完了案件の一覧 — 行をクリックで詳細を開く</p>
             </div>
             <button class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold
                            bg-gradient-to-r from-indigo-500 to-purple-600
@@ -466,30 +648,22 @@
             </button>
           </div>
 
-          <!-- テーブルカード -->
           <div class="bg-[#1c1930] border border-[#2a2545] rounded-2xl overflow-hidden">
-
-            <!-- 検索バー -->
             <div class="px-5 py-4 border-b border-[#2a2545] flex flex-col sm:flex-row sm:items-center gap-3">
               <div class="relative flex-1 max-w-sm">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 text-xs pointer-events-none"></i>
-                <input
-                  id="projectsSearch"
-                  type="text"
-                  placeholder="案件名・クライアント名で検索..."
+                <input id="projectsSearch" type="text"
+                  placeholder="案件名・クライアント名で検索…"
                   oninput="filterProjects(this.value)"
                   class="w-full bg-[#13111e] border border-[#2a2545] rounded-xl
                          pl-8 pr-4 py-2 text-sm text-gray-200 placeholder-gray-600
                          focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30
-                         transition-colors"
-                />
+                         transition-colors" />
               </div>
               <p class="text-xs text-gray-600 flex-shrink-0">
                 合計 <span id="projectsCount" class="text-gray-400 font-semibold">${PROJECTS.length} 件</span>
               </p>
             </div>
-
-            <!-- テーブル -->
             <div class="overflow-x-auto">
               <table class="w-full min-w-[640px]">
                 <thead>
@@ -501,21 +675,16 @@
                     <th class="px-5 py-3 text-right text-[11px] font-semibold text-gray-600 uppercase tracking-wider">予算</th>
                   </tr>
                 </thead>
-                <tbody id="projectsTbody">
-                  ${rows}
-                </tbody>
+                <tbody id="projectsTbody">${buildProjectRows(PROJECTS)}</tbody>
               </table>
             </div>
-
-          </div><!-- /テーブルカード -->
-        </div>
-      `;
+          </div>
+        </div>`;
     }
 
-    // ---- Page renderer ----
+    // ── Page renderer ───────────────────────────────────────────
     function renderPage(page) {
       if (page === 'projects') return renderProjects();
-
       const meta = PAGE_META[page];
       return `
         <div class="flex flex-col items-center justify-center py-24 text-center">
@@ -527,12 +696,13 @@
         </div>`;
     }
 
-    // ---- Navigation ----
+    // ── Navigation ─────────────────────────────────────────────
     let currentPage = 'home';
-    let homeHTML = '';
+    let homeHTML    = '';
 
     function navigate(page) {
       if (!PAGE_META[page]) return;
+      closeDrawer();
       currentPage = page;
 
       document.querySelectorAll('.nav-link').forEach(link => {
@@ -547,7 +717,151 @@
       area.innerHTML = page === 'home' ? homeHTML : renderPage(page);
     }
 
-    // ---- Dark mode ----
+    // ── Drawer ─────────────────────────────────────────────────
+    let drawerProjectIndex = -1;
+    let drawerRefs         = [];
+
+    function openDrawer(idx) {
+      drawerProjectIndex = idx;
+      const p = PROJECTS[idx];
+      drawerRefs = JSON.parse(JSON.stringify(p.refs || []));
+
+      document.getElementById('drawerTitle').textContent  = p.name;
+      document.getElementById('drawerClient').value       = p.client;
+      document.getElementById('drawerName').value         = p.name;
+      document.getElementById('drawerStatus').value       = p.status;
+      document.getElementById('drawerDue').value          = p.due;
+      document.getElementById('drawerBudget').value       = p.budget;
+      document.getElementById('drawerMemo').value         = p.memo   || '';
+      document.getElementById('drawerDraft').value        = p.draft  || '';
+      document.getElementById('drawerScript').value       = p.script || '';
+
+      switchTab('memo');
+      renderDrawerRefs();
+
+      document.getElementById('drawerOverlay').classList.remove('hidden');
+      document.getElementById('drawer').classList.remove('translate-x-full');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeDrawer() {
+      if (drawerProjectIndex === -1 &&
+          document.getElementById('drawer').classList.contains('translate-x-full')) return;
+      document.getElementById('drawer').classList.add('translate-x-full');
+      document.getElementById('drawerOverlay').classList.add('hidden');
+      drawerProjectIndex = -1;
+      document.body.style.overflow = '';
+    }
+
+    function switchTab(tab) {
+      ['memo', 'draft', 'script', 'refs'].forEach(t => {
+        const content = document.getElementById('tab-' + t);
+        const btn     = document.getElementById('tabBtn-' + t);
+        if (content) content.classList.toggle('hidden', t !== tab);
+        if (btn)     btn.classList.toggle('active-tab', t === tab);
+      });
+    }
+
+    function renderDrawerRefs() {
+      const container = document.getElementById('refsList');
+      if (!container) return;
+      if (drawerRefs.length === 0) {
+        container.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-10 text-center">
+            <i class="fas fa-link text-2xl text-gray-700 mb-2"></i>
+            <p class="text-xs text-gray-600">参考資料がまだありません</p>
+          </div>`;
+        return;
+      }
+      container.innerHTML = drawerRefs.map((ref, i) => `
+        <div class="flex items-start gap-3 py-3 border-b border-[#2a2545] last:border-0">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0
+                      bg-indigo-500/15 mt-0.5">
+            <i class="fas fa-link text-indigo-400 text-xs"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-gray-200 font-medium truncate">${escapeHtml(ref.title)}</p>
+            <a href="${escapeHtml(safeUrl(ref.url))}" target="_blank" rel="noopener noreferrer"
+               class="text-xs text-indigo-400 hover:text-indigo-300 truncate block mt-0.5 transition-colors">
+              ${escapeHtml(ref.url)}
+            </a>
+          </div>
+          <button onclick="deleteRef(${i})"
+            class="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-400/10
+                   transition flex-shrink-0 mt-0.5">
+            <i class="fas fa-trash-can text-xs"></i>
+          </button>
+        </div>`).join('');
+    }
+
+    function addRef() {
+      const titleEl = document.getElementById('refTitle');
+      const urlEl   = document.getElementById('refUrl');
+      const title   = titleEl.value.trim();
+      const url     = urlEl.value.trim();
+      if (!title || !url) return;
+      drawerRefs.push({ title, url });
+      titleEl.value = '';
+      urlEl.value   = '';
+      renderDrawerRefs();
+    }
+
+    function deleteRef(i) {
+      drawerRefs.splice(i, 1);
+      renderDrawerRefs();
+    }
+
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.textContent = msg;
+      t.className = [
+        'fixed bottom-6 right-6 z-[100]',
+        'bg-emerald-500 text-white text-sm font-semibold',
+        'px-4 py-2.5 rounded-xl shadow-xl',
+        'opacity-0 transition-opacity duration-200 pointer-events-none',
+      ].join(' ');
+      document.body.appendChild(t);
+      requestAnimationFrame(() => { t.style.opacity = '1'; });
+      setTimeout(() => {
+        t.style.opacity = '0';
+        setTimeout(() => t.remove(), 200);
+      }, 2000);
+    }
+
+    function saveDrawer() {
+      if (drawerProjectIndex < 0) return;
+      const p         = PROJECTS[drawerProjectIndex];
+      const newClient = document.getElementById('drawerClient').value.trim();
+      const newName   = document.getElementById('drawerName').value.trim();
+      const newBudget = parseInt(document.getElementById('drawerBudget').value, 10);
+
+      if (newClient) p.client = newClient;
+      if (newName)   p.name   = newName;
+      p.status = document.getElementById('drawerStatus').value;
+      p.due    = document.getElementById('drawerDue').value || p.due;
+      if (!isNaN(newBudget)) p.budget = newBudget;
+      p.memo   = document.getElementById('drawerMemo').value;
+      p.draft  = document.getElementById('drawerDraft').value;
+      p.script = document.getElementById('drawerScript').value;
+      p.refs   = JSON.parse(JSON.stringify(drawerRefs));
+
+      saveProjectsToStorage();
+
+      // Re-render table (respecting current search)
+      const q = (document.getElementById('projectsSearch')?.value || '').toLowerCase().trim();
+      const filtered = q
+        ? PROJECTS.filter(pr => pr.client.toLowerCase().includes(q) || pr.name.toLowerCase().includes(q))
+        : PROJECTS;
+      const tbody   = document.getElementById('projectsTbody');
+      const countEl = document.getElementById('projectsCount');
+      if (tbody)   tbody.innerHTML = buildProjectRows(filtered);
+      if (countEl) countEl.textContent = `${filtered.length} 件`;
+
+      showToast('保存しました');
+      closeDrawer();
+    }
+
+    // ── Dark mode ──────────────────────────────────────────────
     let isDark = localStorage.getItem('dw_dark') !== 'false';
 
     function applyDark() {
@@ -559,16 +873,16 @@
       document.getElementById('darkToggle').classList.toggle('text-gray-400', !isDark);
     }
 
-    // ---- Header date ----
+    // ── Header date ────────────────────────────────────────────
     function setHeaderDate() {
       const el = document.getElementById('headerDate');
       if (!el) return;
       el.textContent = new Date().toLocaleDateString('ja-JP', {
-        year: 'numeric', month: 'long', day: 'numeric', weekday: 'short'
+        year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',
       });
     }
 
-    // ---- Mobile sidebar ----
+    // ── Mobile sidebar ─────────────────────────────────────────
     function openSidebar() {
       document.getElementById('sidebar').classList.add('open');
       document.getElementById('overlay').classList.remove('hidden');
@@ -578,7 +892,7 @@
       document.getElementById('overlay').classList.add('hidden');
     }
 
-    // ---- Init ----
+    // ── Init ───────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
       homeHTML = document.getElementById('pageArea').innerHTML;
 
@@ -600,6 +914,11 @@
       });
 
       document.getElementById('mobileMenuBtn')?.addEventListener('click', openSidebar);
+
+      // ESC → close drawer
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeDrawer();
+      });
     });
   </script>
 </body>
