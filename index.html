@@ -12,14 +12,6 @@
       darkMode: 'class',
       theme: {
         extend: {
-          colors: {
-            sidebar: {
-              bg: '#0f0f1a',
-              hover: '#1a1a2e',
-              active: '#1e1b4b',
-              border: '#1e1e3a',
-            }
-          },
           fontFamily: {
             sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
           }
@@ -35,7 +27,63 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #312e81; border-radius: 4px; }
+
+    /* Sidebar nav links */
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #6b7280;
+      text-decoration: none;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .nav-link:hover { background: #1a1a2e; color: #a5b4fc; }
+    .nav-link.active {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(99,102,241,0.35);
+    }
+    .nav-icon { width: 20px; text-align: center; font-size: 0.85rem; flex-shrink: 0; }
+
+    /* Page transition */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .page-enter { animation: fadeInUp 0.28s ease forwards; }
+
+    /* Mobile sidebar */
+    @media (max-width: 1023px) {
+      #sidebar { transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      .ml-64 { margin-left: 0 !important; }
+    }
+
+    /* Light mode overrides */
+    html:not(.dark) body { background-color: #f8fafc; color: #1e293b; }
+    html:not(.dark) #sidebar { background: #ffffff; border-color: #e2e8f0; }
+    html:not(.dark) header { background: rgba(255,255,255,0.85); border-color: #e2e8f0; }
+    html:not(.dark) .nav-link { color: #64748b; }
+    html:not(.dark) .nav-link:hover { background: #eef2ff; color: #4f46e5; }
+    html:not(.dark) #pageSubtitle,
+    html:not(.dark) #headerDate { color: #94a3b8; }
+    html:not(.dark) .card-surface { background: #ffffff !important; border-color: #e2e8f0 !important; }
+    html:not(.dark) .card-surface:hover { border-color: #a5b4fc !important; }
+    html:not(.dark) .recent-section { background: #ffffff !important; border-color: #e2e8f0 !important; }
+    html:not(.dark) .recent-divider { border-color: #f1f5f9 !important; }
+    html:not(.dark) .recent-item:hover { background: #f8fafc !important; }
+    html:not(.dark) .text-main { color: #1e293b !important; }
+    html:not(.dark) .text-sub { color: #64748b !important; }
+  </style>
 </head>
 
 <body class="bg-gray-950 text-gray-100 font-sans antialiased">
@@ -61,44 +109,36 @@
 
     <!-- Navigation -->
     <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-
       <p class="text-[10px] font-semibold text-gray-600 uppercase tracking-widest px-3 mb-2">メニュー</p>
 
       <a href="#" class="nav-link active" data-page="home">
         <span class="nav-icon"><i class="fas fa-home"></i></span>
         <span>ホーム</span>
       </a>
-
       <a href="#" class="nav-link" data-page="projects">
         <span class="nav-icon"><i class="fas fa-briefcase"></i></span>
         <span>デザイン案件管理</span>
       </a>
-
       <a href="#" class="nav-link" data-page="school">
         <span class="nav-icon"><i class="fas fa-graduation-cap"></i></span>
         <span>スクール課題管理</span>
       </a>
-
       <a href="#" class="nav-link" data-page="notes">
         <span class="nav-icon"><i class="fas fa-book-open"></i></span>
         <span>学習ノート</span>
       </a>
-
       <a href="#" class="nav-link" data-page="tasks">
         <span class="nav-icon"><i class="fas fa-check-circle"></i></span>
         <span>タスク / ToDo</span>
       </a>
-
       <a href="#" class="nav-link" data-page="ideas">
         <span class="nav-icon"><i class="fas fa-lightbulb"></i></span>
         <span>アイデア・SNS</span>
       </a>
-
       <a href="#" class="nav-link" data-page="income">
         <span class="nav-icon"><i class="fas fa-yen-sign"></i></span>
         <span>収入管理</span>
       </a>
-
     </nav>
 
     <!-- Sidebar Footer -->
@@ -116,14 +156,11 @@
                    bg-gray-950/80 backdrop-blur-md
                    border-b border-[#1e1e3a]">
 
-      <!-- Left: Mobile hamburger + Page title -->
       <div class="flex items-center gap-4">
-        <!-- Mobile toggle (hidden on desktop) -->
         <button id="mobileMenuBtn"
           class="lg:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-[#1a1a2e] transition">
           <i class="fas fa-bars"></i>
         </button>
-
         <div>
           <h1 class="text-base font-bold text-white leading-tight tracking-tight">
             佐々木のデザイナーワークスペース
@@ -132,18 +169,12 @@
         </div>
       </div>
 
-      <!-- Right: Date + Dark mode toggle + Avatar -->
       <div class="flex items-center gap-3">
         <span id="headerDate" class="hidden sm:block text-xs text-gray-500"></span>
-
-        <!-- Dark mode toggle -->
-        <button id="darkToggle"
-          title="ダークモード切替"
+        <button id="darkToggle" title="ダークモード切替"
           class="p-2 rounded-xl bg-[#1a1a2e] text-yellow-400 hover:bg-[#252540] transition">
           <i class="fas fa-sun text-sm"></i>
         </button>
-
-        <!-- Avatar -->
         <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white
                     bg-gradient-to-br from-indigo-400 to-purple-500">
           S
@@ -153,20 +184,284 @@
 
     <!-- MAIN CONTENT -->
     <main id="mainContent" class="flex-1 p-6">
-      <!-- ページコンテンツはここに動的に挿入されます -->
       <div id="pageArea" class="page-enter">
-        <!-- placeholder: home will render here -->
-      </div>
+
+        <!-- ===== HOME DASHBOARD ===== -->
+        <div class="space-y-6">
+
+          <!-- サマリーカード 4枚 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+            <!-- 1: 今日のタスク -->
+            <div class="card-surface bg-[#1c1930] border border-[#2a2545] rounded-2xl p-5
+                        flex flex-col gap-4 hover:border-indigo-500/50 transition-colors cursor-default">
+              <div class="flex items-start justify-between">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
+                            bg-gradient-to-br from-indigo-500 to-purple-600
+                            shadow-lg shadow-indigo-500/30">
+                  <i class="fas fa-check text-white text-sm"></i>
+                </div>
+                <span class="text-[10px] font-semibold text-indigo-400
+                             bg-indigo-500/10 px-2 py-0.5 rounded-full">Today</span>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 text-sub mb-1">今日のタスク</p>
+                <p class="text-3xl font-extrabold text-white text-main leading-none">5</p>
+                <p class="text-xs text-gray-500 text-sub mt-2">
+                  <span class="text-emerald-400 font-semibold">3件 完了済み</span>
+                  &thinsp;·&thinsp;残り 2件
+                </p>
+              </div>
+            </div>
+
+            <!-- 2: 進行中案件 -->
+            <div class="card-surface bg-[#1c1930] border border-[#2a2545] rounded-2xl p-5
+                        flex flex-col gap-4 hover:border-blue-500/50 transition-colors cursor-default">
+              <div class="flex items-start justify-between">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
+                            bg-gradient-to-br from-blue-500 to-indigo-600
+                            shadow-lg shadow-blue-500/30">
+                  <i class="fas fa-briefcase text-white text-sm"></i>
+                </div>
+                <span class="text-[10px] font-semibold text-blue-400
+                             bg-blue-500/10 px-2 py-0.5 rounded-full">Active</span>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 text-sub mb-1">進行中案件</p>
+                <p class="text-3xl font-extrabold text-white text-main leading-none">3</p>
+                <p class="text-xs text-gray-500 text-sub mt-2">
+                  <span class="text-amber-400 font-semibold">2件 今週締切</span>
+                  &thinsp;·&thinsp;要確認
+                </p>
+              </div>
+            </div>
+
+            <!-- 3: 今月の収入合計 -->
+            <div class="card-surface bg-[#1c1930] border border-[#2a2545] rounded-2xl p-5
+                        flex flex-col gap-4 hover:border-purple-500/50 transition-colors cursor-default">
+              <div class="flex items-start justify-between">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
+                            bg-gradient-to-br from-purple-500 to-pink-600
+                            shadow-lg shadow-purple-500/30">
+                  <i class="fas fa-yen-sign text-white text-sm"></i>
+                </div>
+                <span class="text-[10px] font-semibold text-purple-400
+                             bg-purple-500/10 px-2 py-0.5 rounded-full">今月</span>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 text-sub mb-1">今月の収入合計</p>
+                <p class="text-3xl font-extrabold text-white text-main leading-none">¥120,000</p>
+                <p class="text-xs text-gray-500 text-sub mt-2">
+                  <span class="text-emerald-400 font-semibold">↑ 先月比 +15%</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- 4: 学習ログ -->
+            <div class="card-surface bg-[#1c1930] border border-[#2a2545] rounded-2xl p-5
+                        flex flex-col gap-4 hover:border-teal-500/50 transition-colors cursor-default">
+              <div class="flex items-start justify-between">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
+                            bg-gradient-to-br from-teal-500 to-cyan-600
+                            shadow-lg shadow-teal-500/30">
+                  <i class="fas fa-book-open text-white text-sm"></i>
+                </div>
+                <span class="text-[10px] font-semibold text-teal-400
+                             bg-teal-500/10 px-2 py-0.5 rounded-full">学習</span>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 text-sub mb-1">学習ログ（今月累計）</p>
+                <p class="text-3xl font-extrabold text-white text-main leading-none">
+                  12<span class="text-lg font-semibold text-gray-400">h</span>
+                </p>
+                <p class="text-xs text-gray-500 text-sub mt-2">
+                  今週
+                  <span class="text-teal-400 font-semibold">3.5h</span>
+                  &thinsp;·&thinsp;昨日比 +1h
+                </p>
+              </div>
+            </div>
+
+          </div><!-- /grid -->
+
+          <!-- 最近の更新 -->
+          <div class="recent-section bg-[#1c1930] border border-[#2a2545] rounded-2xl overflow-hidden">
+
+            <div class="px-5 py-4 border-b border-[#2a2545] flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-clock-rotate-left text-indigo-400 text-xs"></i>
+                <h3 class="text-sm font-semibold text-gray-200 text-main">最近の更新</h3>
+              </div>
+              <span class="text-xs text-gray-600">過去7日間</span>
+            </div>
+
+            <ul>
+              <!-- Item 1 -->
+              <li class="recent-item flex items-center gap-4 px-5 py-4
+                         border-b recent-divider border-[#2a2545]
+                         hover:bg-white/[0.025] transition-colors">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
+                            bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md shadow-blue-500/20">
+                  <i class="fas fa-briefcase text-white text-xs"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-gray-200 text-main font-medium truncate">
+                    ブランディングロゴ — 修正提出
+                  </p>
+                  <p class="text-xs text-gray-500 text-sub mt-0.5">デザイン案件管理</p>
+                </div>
+                <span class="text-xs text-gray-600 flex-shrink-0">2時間前</span>
+              </li>
+
+              <!-- Item 2 -->
+              <li class="recent-item flex items-center gap-4 px-5 py-4
+                         border-b recent-divider border-[#2a2545]
+                         hover:bg-white/[0.025] transition-colors">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
+                            bg-gradient-to-br from-purple-500 to-pink-600 shadow-md shadow-purple-500/20">
+                  <i class="fas fa-graduation-cap text-white text-xs"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-gray-200 text-main font-medium truncate">
+                    タイポグラフィ演習 — 完了
+                  </p>
+                  <p class="text-xs text-gray-500 text-sub mt-0.5">スクール課題管理</p>
+                </div>
+                <span class="text-xs text-gray-600 flex-shrink-0">昨日</span>
+              </li>
+
+              <!-- Item 3 -->
+              <li class="recent-item flex items-center gap-4 px-5 py-4
+                         hover:bg-white/[0.025] transition-colors">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
+                            bg-gradient-to-br from-teal-500 to-cyan-600 shadow-md shadow-teal-500/20">
+                  <i class="fas fa-book-open text-white text-xs"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-gray-200 text-main font-medium truncate">
+                    Figma Auto Layout — ノート追加
+                  </p>
+                  <p class="text-xs text-gray-500 text-sub mt-0.5">学習ノート</p>
+                </div>
+                <span class="text-xs text-gray-600 flex-shrink-0">2日前</span>
+              </li>
+            </ul>
+
+          </div><!-- /最近の更新 -->
+
+        </div><!-- /space-y-6 -->
+        <!-- ===== /HOME DASHBOARD ===== -->
+
+      </div><!-- /pageArea -->
     </main>
 
-  </div>
+  </div><!-- /main wrapper -->
 
   <!-- Mobile overlay -->
-  <div id="overlay"
-    class="fixed inset-0 bg-black/60 z-30 hidden"
-    onclick="closeSidebar()">
-  </div>
+  <div id="overlay" class="fixed inset-0 bg-black/60 z-30 hidden" onclick="closeSidebar()"></div>
 
-  <script src="script.js"></script>
+  <script>
+    /* ==============================
+       Designer Workspace — script
+       ============================== */
+
+    const PAGE_META = {
+      home:     { label: 'ホーム',           subtitle: 'ダッシュボード' },
+      projects: { label: 'デザイン案件管理', subtitle: 'プロジェクトの進捗を管理' },
+      school:   { label: 'スクール課題管理', subtitle: '課題の進捗を追跡' },
+      notes:    { label: '学習ノート',       subtitle: 'アイデアと知識をメモ' },
+      tasks:    { label: 'タスク / ToDo',    subtitle: 'タスクを整理して集中' },
+      ideas:    { label: 'アイデア・SNS',    subtitle: '投稿ドラフトを管理' },
+      income:   { label: '収入管理',         subtitle: '売上と収入を把握' },
+    };
+
+    let currentPage = 'home';
+    let homeHTML = '';   // 初期HTMLを保存
+
+    function navigate(page) {
+      if (!PAGE_META[page]) return;
+      currentPage = page;
+
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.toggle('active', link.dataset.page === page);
+      });
+
+      document.getElementById('pageSubtitle').textContent = PAGE_META[page].label;
+
+      const area = document.getElementById('pageArea');
+      area.classList.remove('page-enter');
+      void area.offsetWidth;
+      area.classList.add('page-enter');
+      area.innerHTML = page === 'home' ? homeHTML : renderPlaceholder(page);
+    }
+
+    function renderPlaceholder(page) {
+      const meta = PAGE_META[page];
+      return `
+        <div class="flex flex-col items-center justify-center py-24 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center mb-4">
+            <i class="fas fa-tools text-indigo-400 text-2xl"></i>
+          </div>
+          <h2 class="text-xl font-bold text-gray-300 mb-2">${meta.label}</h2>
+          <p class="text-sm text-gray-500">このページは近日公開予定です</p>
+        </div>`;
+    }
+
+    /* Dark mode */
+    let isDark = localStorage.getItem('dw_dark') !== 'false';
+
+    function applyDark() {
+      document.documentElement.classList.toggle('dark', isDark);
+      const icon = document.querySelector('#darkToggle i');
+      if (!icon) return;
+      icon.className = isDark ? 'fas fa-sun text-sm' : 'fas fa-moon text-sm';
+      document.getElementById('darkToggle').classList.toggle('text-yellow-400', isDark);
+      document.getElementById('darkToggle').classList.toggle('text-gray-400', !isDark);
+    }
+
+    /* Header date */
+    function setHeaderDate() {
+      const el = document.getElementById('headerDate');
+      if (!el) return;
+      el.textContent = new Date().toLocaleDateString('ja-JP', {
+        year: 'numeric', month: 'long', day: 'numeric', weekday: 'short'
+      });
+    }
+
+    /* Mobile sidebar */
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('overlay').classList.remove('hidden');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.add('hidden');
+    }
+
+    /* Init */
+    document.addEventListener('DOMContentLoaded', () => {
+      // ホームの静的HTMLを保存してから他ページで再利用できるようにする
+      homeHTML = document.getElementById('pageArea').innerHTML;
+
+      applyDark();
+      setHeaderDate();
+
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', e => {
+          e.preventDefault();
+          navigate(link.dataset.page);
+          closeSidebar();
+        });
+      });
+
+      document.getElementById('darkToggle').addEventListener('click', () => {
+        isDark = !isDark;
+        localStorage.setItem('dw_dark', isDark);
+        applyDark();
+      });
+
+      document.getElementById('mobileMenuBtn')?.addEventListener('click', openSidebar);
+    });
+  </script>
 </body>
 </html>
