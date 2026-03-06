@@ -82,9 +82,9 @@
     /* ── Drawer form inputs ── */
     .dw-input {
       background: #13111e; border: 1px solid #2a2545; border-radius: 0.75rem;
-      padding: 8px 12px; font-size: 0.875rem; color: #e5e7eb;
+      padding: 10px 12px; font-size: 0.875rem; color: #e5e7eb;
       outline: none; transition: border-color 0.15s, box-shadow 0.15s;
-      font-family: inherit; width: 100%;
+      font-family: inherit; width: 100%; min-height: 42px;
     }
     .dw-input:focus {
       border-color: rgba(99,102,241,0.6);
@@ -100,11 +100,45 @@
     .dw-textarea:focus { border-color: rgba(99,102,241,0.6); }
     .dw-textarea::placeholder, .dw-input::placeholder { color: #4b5563; }
 
-    /* ── Date input dark calendar icon ── */
+    /* ── Misc input fixes ── */
     input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
-    select.dw-input option { background: #1c1930; }
+    select option { background: #1c1930; color: #e5e7eb; }
+
+    /* ── Drawer action buttons ── */
+    .dw-btn-danger {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 14px; border-radius: 12px;
+      font-size: 0.8rem; font-weight: 600; color: #f87171;
+      transition: background 0.15s; min-height: 42px;
+    }
+    .dw-btn-danger:hover { background: rgba(248,113,113,0.12); }
+    .dw-btn-cancel {
+      display: inline-flex; align-items: center;
+      padding: 10px 16px; border-radius: 12px;
+      font-size: 0.875rem; font-weight: 500; color: #6b7280;
+      transition: background 0.15s, color 0.15s; min-height: 42px;
+    }
+    .dw-btn-cancel:hover { background: #1a1a2e; color: #e5e7eb; }
+    .dw-btn-save {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 20px; border-radius: 12px;
+      font-size: 0.875rem; font-weight: 600; color: #fff;
+      background: linear-gradient(135deg, #6366f1, #7c3aed);
+      box-shadow: 0 4px 14px rgba(99,102,241,0.3);
+      transition: opacity 0.15s; min-height: 42px;
+    }
+    .dw-btn-save:hover { opacity: 0.85; }
+
+    /* ── Projects sort select ── */
+    .proj-sort-select {
+      background: #13111e; border: 1px solid #2a2545; border-radius: 0.75rem;
+      padding: 8px 12px; font-size: 0.8rem; color: #9ca3af;
+      outline: none; cursor: pointer; min-height: 38px;
+      transition: border-color 0.15s; font-family: inherit;
+    }
+    .proj-sort-select:focus { border-color: rgba(99,102,241,0.6); }
   </style>
 </head>
 
@@ -339,43 +373,81 @@
            shadow-2xl shadow-black/60">
 
     <!-- Drawer header -->
-    <div class="flex items-start justify-between px-6 py-5 border-b border-[#2a2545] flex-shrink-0">
-      <div class="flex-1 min-w-0 pr-4">
+    <div class="flex items-start justify-between px-5 py-4 border-b border-[#2a2545] flex-shrink-0">
+      <div class="flex-1 min-w-0 pr-3">
         <p class="text-[10px] text-indigo-400 font-semibold uppercase tracking-widest mb-1">案件詳細</p>
         <h2 id="drawerTitle" class="text-base font-bold text-white truncate">—</h2>
       </div>
       <button onclick="closeDrawer()"
-        class="p-2 rounded-xl text-gray-500 hover:text-white hover:bg-[#1a1a2e] transition flex-shrink-0">
+        class="p-2 rounded-xl text-gray-500 hover:text-white hover:bg-[#1a1a2e] transition flex-shrink-0 mt-0.5">
         <i class="fas fa-xmark text-base"></i>
       </button>
     </div>
 
     <!-- Editable fields -->
-    <div class="px-6 py-4 border-b border-[#2a2545] flex-shrink-0 grid grid-cols-2 gap-3">
-      <div class="col-span-2 sm:col-span-1">
-        <label class="block text-[10px] text-gray-600 uppercase tracking-wider mb-1.5">クライアント</label>
-        <input id="drawerClient" type="text" class="dw-input" />
-      </div>
-      <div class="col-span-2 sm:col-span-1">
-        <label class="block text-[10px] text-gray-600 uppercase tracking-wider mb-1.5">プロジェクト名</label>
-        <input id="drawerName" type="text" class="dw-input" />
-      </div>
-      <div>
-        <label class="block text-[10px] text-gray-600 uppercase tracking-wider mb-1.5">ステータス</label>
-        <select id="drawerStatus" class="dw-input">
-          <option value="企画">企画</option>
-          <option value="デザイン中">デザイン中</option>
-          <option value="レビュー中">レビュー中</option>
-          <option value="納品済み">納品済み</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-[10px] text-gray-600 uppercase tracking-wider mb-1.5">納期</label>
-        <input id="drawerDue" type="date" class="dw-input" />
-      </div>
-      <div class="col-span-2">
-        <label class="block text-[10px] text-gray-600 uppercase tracking-wider mb-1.5">予算（円）</label>
-        <input id="drawerBudget" type="number" class="dw-input" />
+    <div class="border-b border-[#2a2545] flex-shrink-0 overflow-y-auto" style="max-height: 46vh;">
+      <div class="px-5 py-4 grid grid-cols-2 gap-3">
+
+        <div class="col-span-2 sm:col-span-1">
+          <label class="block text-[10px] text-gray-600 uppercase tracking-wider mb-1.5">クライアント</label>
+          <input id="drawerClient" type="text" class="dw-input" placeholder="株式会社〇〇" />
+        </div>
+
+        <div class="col-span-2 sm:col-span-1">
+          <label class="block text-[10px] text-gray-600 uppercase tracking-wider mb-1.5">プロジェクト名</label>
+          <input id="drawerName" type="text" class="dw-input" placeholder="コーポレートサイト制作" />
+        </div>
+
+        <div>
+          <label class="block text-[10px] text-gray-600 uppercase tracking-wider mb-1.5">ステータス</label>
+          <select id="drawerStatus" class="dw-input">
+            <option value="企画">企画</option>
+            <option value="デザイン中">デザイン中</option>
+            <option value="レビュー中">レビュー中</option>
+            <option value="納品済み">納品済み</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] text-gray-600 uppercase tracking-wider mb-1.5">納期</label>
+          <input id="drawerDue" type="date" class="dw-input" />
+        </div>
+
+        <!-- 種別 -->
+        <div class="col-span-2">
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-[10px] text-gray-600 uppercase tracking-wider">種別</label>
+            <button onclick="toggleTypeManager()"
+              class="text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1">
+              <i class="fas fa-sliders text-[9px]"></i>種別を管理
+            </button>
+          </div>
+          <select id="drawerProjectType" class="dw-input"></select>
+
+          <!-- 種別管理パネル -->
+          <div id="typeManagerPanel" class="hidden mt-2 bg-[#0a0912] border border-[#2a2545] rounded-xl p-3">
+            <p class="text-[10px] text-gray-600 uppercase tracking-wider mb-2">種別リスト</p>
+            <div id="typeList" class="space-y-1 mb-3" style="max-height: 144px; overflow-y: auto;"></div>
+            <div class="flex gap-2">
+              <input id="newTypeInput" type="text" placeholder="新しい種別名…"
+                class="dw-input flex-1" style="min-height: 38px; padding: 8px 10px; font-size: 0.8rem;" />
+              <button onclick="addProjectType()"
+                class="flex-shrink-0 px-3 rounded-lg text-xs font-semibold
+                       bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30
+                       border border-indigo-500/20 transition-colors"
+                style="min-height: 38px;">
+                追加
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 予算 -->
+        <div class="col-span-2">
+          <label class="block text-[10px] text-gray-600 uppercase tracking-wider mb-1.5">予算（円）</label>
+          <input id="drawerBudget" type="number" class="dw-input" placeholder="例：300000" />
+        </div>
+
       </div>
     </div>
 
@@ -390,28 +462,22 @@
     <!-- Tab content -->
     <div class="flex-1 overflow-y-auto p-5">
 
-      <!-- メモ -->
       <div id="tab-memo">
         <textarea id="drawerMemo" class="dw-textarea"
           placeholder="自由にメモを書いてください…&#10;クライアントとのやりとり、要件、懸念事項など"></textarea>
       </div>
 
-      <!-- 構成案 -->
       <div id="tab-draft" class="hidden">
         <textarea id="drawerDraft" class="dw-textarea"
           placeholder="サイト・資料の構成案を書いてください…&#10;例）TOP / About / Service / Works / Contact"></textarea>
       </div>
 
-      <!-- プレゼン台本 -->
       <div id="tab-script" class="hidden">
         <textarea id="drawerScript" class="dw-textarea"
           placeholder="プレゼンテーションの台本を書いてください…&#10;スライドごとに話す内容を整理しましょう"></textarea>
       </div>
 
-      <!-- 参考資料 -->
       <div id="tab-refs" class="hidden">
-
-        <!-- Add form -->
         <div class="bg-[#1c1930] border border-[#2a2545] rounded-xl p-4 mb-4">
           <p class="text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-3">
             <i class="fas fa-plus mr-1"></i>資料を追加
@@ -421,33 +487,29 @@
             <input id="refUrl"   type="url"  placeholder="https://..." class="dw-input" />
           </div>
           <button onclick="addRef()"
-            class="mt-3 w-full py-2 rounded-lg text-xs font-semibold
+            class="mt-3 w-full rounded-lg text-xs font-semibold
                    bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30
-                   border border-indigo-500/20 transition-colors">
+                   border border-indigo-500/20 transition-colors"
+            style="min-height: 38px;">
             <i class="fas fa-plus mr-1"></i>追加する
           </button>
         </div>
-
-        <!-- Refs list -->
         <div id="refsList"></div>
-
       </div>
+
     </div>
 
-    <!-- Footer / actions -->
-    <div class="px-6 py-4 border-t border-[#2a2545] flex items-center justify-between gap-3 flex-shrink-0">
-      <button onclick="closeDrawer()"
-        class="px-4 py-2 rounded-xl text-sm font-medium text-gray-500
-               hover:text-gray-200 hover:bg-[#1a1a2e] transition-colors">
-        キャンセル
+    <!-- Footer -->
+    <div class="px-5 py-4 border-t border-[#2a2545] flex items-center justify-between gap-2 flex-shrink-0">
+      <button onclick="deleteProject()" class="dw-btn-danger">
+        <i class="fas fa-trash-can text-xs"></i>削除
       </button>
-      <button onclick="saveDrawer()"
-        class="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold
-               bg-gradient-to-r from-indigo-500 to-purple-600
-               hover:from-indigo-400 hover:to-purple-500
-               text-white shadow-lg shadow-indigo-500/25 transition-all">
-        <i class="fas fa-floppy-disk"></i>保存する
-      </button>
+      <div class="flex items-center gap-2">
+        <button onclick="closeDrawer()" class="dw-btn-cancel">キャンセル</button>
+        <button onclick="saveDrawer()" class="dw-btn-save">
+          <i class="fas fa-floppy-disk text-sm"></i>保存する
+        </button>
+      </div>
     </div>
 
   </div>
@@ -469,62 +531,107 @@
       income:   { label: '収入管理',         subtitle: '売上と収入を把握' },
     };
 
+    // ── Sort options ────────────────────────────────────────────
+    const SORT_OPTIONS = [
+      { value: 'due-asc',      label: '納期が近い順' },
+      { value: 'due-desc',     label: '納期が遠い順' },
+      { value: 'updated-desc', label: '更新が新しい順' },
+      { value: 'budget-desc',  label: '予算が高い順' },
+      { value: 'client-asc',   label: 'クライアント名順' },
+    ];
+
+    // ── View state ─────────────────────────────────────────────
+    let projectsQuery = '';
+    let projectsSort  = 'due-asc';
+
+    // ── Project types ──────────────────────────────────────────
+    const DEFAULT_PROJECT_TYPES = ['WEBサイト制作', 'バナー', 'ロゴ', 'LP', 'SNS投稿画像', 'チラシ'];
+
+    function loadTypesFromStorage() {
+      try {
+        const raw = localStorage.getItem('dw_projectTypes');
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      return null;
+    }
+
+    function saveTypesToStorage() {
+      localStorage.setItem('dw_projectTypes', JSON.stringify(PROJECT_TYPES));
+    }
+
+    let PROJECT_TYPES = loadTypesFromStorage() || [...DEFAULT_PROJECT_TYPES];
+
     // ── Projects default data ──────────────────────────────────
     const DEFAULT_PROJECTS = [
       {
-        client: '株式会社テクノフロー',
-        name:   'コーポレートサイトリニューアル',
-        due:    '2026-03-20',
-        status: 'デザイン中',
-        budget: 350000,
-        memo:   'TOPページのビジュアルはクライアント指定のブルー系で統一。\nスマホ対応必須。レスポンシブ確認は毎回行うこと。',
-        draft:  'TOP / About / Service / Works / Contact\n各ページにCTAボタンを配置。Worksは最新5件を表示。',
-        script: '',
-        refs:   [{ title: 'Awwwards — デザイン参考', url: 'https://www.awwwards.com' }],
+        client:      '株式会社テクノフロー',
+        name:        'コーポレートサイトリニューアル',
+        due:         '2026-03-20',
+        status:      'デザイン中',
+        budget:      350000,
+        projectType: 'WEBサイト制作',
+        memo:        'TOPページのビジュアルはクライアント指定のブルー系で統一。\nスマホ対応必須。レスポンシブ確認は毎回行うこと。',
+        draft:       'TOP / About / Service / Works / Contact\n各ページにCTAボタンを配置。Worksは最新5件を表示。',
+        script:      '',
+        refs:        [{ title: 'Awwwards — デザイン参考', url: 'https://www.awwwards.com' }],
+        createdAt:   '2026-02-10T09:00:00.000Z',
+        updatedAt:   '2026-03-04T14:30:00.000Z',
       },
       {
-        client: 'フリーランス 佐藤様',
-        name:   'ロゴ・名刺デザイン',
-        due:    '2026-03-10',
-        status: 'レビュー中',
-        budget: 80000,
-        memo:   'ミニマルで洗練されたデザインを希望。カラーは黒・金・白の3色。',
-        draft:  '',
-        script: '',
-        refs:   [],
+        client:      'フリーランス 佐藤様',
+        name:        'ロゴ・名刺デザイン',
+        due:         '2026-03-10',
+        status:      'レビュー中',
+        budget:      80000,
+        projectType: 'ロゴ',
+        memo:        'ミニマルで洗練されたデザインを希望。カラーは黒・金・白の3色。',
+        draft:       '',
+        script:      '',
+        refs:        [],
+        createdAt:   '2026-02-20T10:00:00.000Z',
+        updatedAt:   '2026-03-05T11:00:00.000Z',
       },
       {
-        client: '合同会社グリーンラボ',
-        name:   'ECサイト バナー制作',
-        due:    '2026-04-05',
-        status: '企画',
-        budget: 120000,
-        memo:   '',
-        draft:  '',
-        script: '',
-        refs:   [],
+        client:      '合同会社グリーンラボ',
+        name:        'ECサイト バナー制作',
+        due:         '2026-04-05',
+        status:      '企画',
+        budget:      120000,
+        projectType: 'バナー',
+        memo:        '',
+        draft:       '',
+        script:      '',
+        refs:        [],
+        createdAt:   '2026-03-01T09:00:00.000Z',
+        updatedAt:   '2026-03-01T09:00:00.000Z',
       },
       {
-        client: '株式会社ミライデザイン',
-        name:   'ブランドガイドライン策定',
-        due:    '2026-02-28',
-        status: '納品済み',
-        budget: 500000,
-        memo:   '納品完了。フィードバックは全て反映済み。アーカイブとして保存。',
-        draft:  '',
-        script: '',
-        refs:   [],
+        client:      '株式会社ミライデザイン',
+        name:        'ブランドガイドライン策定',
+        due:         '2026-02-28',
+        status:      '納品済み',
+        budget:      500000,
+        projectType: 'WEBサイト制作',
+        memo:        '納品完了。フィードバックは全て反映済み。アーカイブとして保存。',
+        draft:       '',
+        script:      '',
+        refs:        [],
+        createdAt:   '2026-01-15T09:00:00.000Z',
+        updatedAt:   '2026-02-28T17:00:00.000Z',
       },
       {
-        client: '個人 山田様',
-        name:   'SNSアイコン・ヘッダー',
-        due:    '2026-03-15',
-        status: 'デザイン中',
-        budget: 45000,
-        memo:   'Twitter・Instagram用アイコン（丸形）。プロフィールページで映える明るいトーンで。',
-        draft:  '',
-        script: '',
-        refs:   [{ title: 'Dribbble — インスピレーション', url: 'https://dribbble.com' }],
+        client:      '個人 山田様',
+        name:        'SNSアイコン・ヘッダー',
+        due:         '2026-03-15',
+        status:      'デザイン中',
+        budget:      45000,
+        projectType: 'SNS投稿画像',
+        memo:        'Twitter・Instagram用アイコン（丸形）。プロフィールページで映える明るいトーンで。',
+        draft:       '',
+        script:      '',
+        refs:        [{ title: 'Dribbble — インスピレーション', url: 'https://dribbble.com' }],
+        createdAt:   '2026-02-25T13:00:00.000Z',
+        updatedAt:   '2026-03-03T16:00:00.000Z',
       },
     ];
 
@@ -541,10 +648,21 @@
       localStorage.setItem('dw_projects', JSON.stringify(PROJECTS));
     }
 
-    // ── Projects array (localStorage priority) ─────────────────
+    // ── Load projects + complement missing timestamps ────────────
     let PROJECTS = loadProjectsFromStorage() || JSON.parse(JSON.stringify(DEFAULT_PROJECTS));
 
-    // ── Helpers ────────────────────────────────────────────────
+    // 既存データに createdAt/updatedAt が無い場合を補完
+    (function complementTimestamps() {
+      let dirty = false;
+      const epoch = new Date(0).toISOString(); // 最古扱い
+      PROJECTS.forEach(p => {
+        if (!p.createdAt) { p.createdAt = epoch; dirty = true; }
+        if (!p.updatedAt) { p.updatedAt = p.createdAt; dirty = true; }
+      });
+      if (dirty) saveProjectsToStorage();
+    })();
+
+    // ── Utility helpers ────────────────────────────────────────
     const STATUS_BADGE = {
       '企画':      { bg: 'bg-slate-700/60',   text: 'text-slate-300',   dot: 'bg-slate-400'   },
       'デザイン中': { bg: 'bg-indigo-500/15', text: 'text-indigo-300',  dot: 'bg-indigo-400'  },
@@ -554,16 +672,18 @@
 
     function statusBadge(status) {
       const s = STATUS_BADGE[status] || STATUS_BADGE['企画'];
-      return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${s.bg} ${s.text}">
+      return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap ${s.bg} ${s.text}">
         <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.dot}"></span>${status}
       </span>`;
     }
 
     function fmtBudget(n) {
+      if (n === '' || n === null || n === undefined) return '<span class="text-gray-600">—</span>';
       return '¥' + Number(n).toLocaleString('ja-JP');
     }
 
     function fmtDue(dateStr) {
+      if (!dateStr) return '<span class="text-gray-600">—</span>';
       const d = new Date(dateStr);
       const today = new Date(); today.setHours(0,0,0,0);
       const diff  = Math.ceil((d - today) / 86400000);
@@ -591,48 +711,135 @@
       return '#';
     }
 
-    // ── Table rows ─────────────────────────────────────────────
+    function todayPlusDays(n) {
+      const d = new Date();
+      d.setDate(d.getDate() + n);
+      return d.toISOString().split('T')[0];
+    }
+
+    // ── Toast ──────────────────────────────────────────────────
+    function showToast(msg, type = 'success') {
+      const colors = { success: '#10b981', error: '#ef4444', warn: '#f59e0b' };
+      const t = document.createElement('div');
+      t.textContent = msg;
+      Object.assign(t.style, {
+        position: 'fixed', bottom: '24px', right: '24px', zIndex: '110',
+        background: colors[type] || colors.success,
+        color: '#fff', fontSize: '0.875rem', fontWeight: '600',
+        padding: '12px 18px', borderRadius: '14px',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+        opacity: '0', transition: 'opacity 0.2s', pointerEvents: 'none',
+        fontFamily: 'inherit',
+      });
+      document.body.appendChild(t);
+      requestAnimationFrame(() => { t.style.opacity = '1'; });
+      setTimeout(() => {
+        t.style.opacity = '0';
+        setTimeout(() => t.remove(), 200);
+      }, 2200);
+    }
+
+    // ── Table rows builder ─────────────────────────────────────
+    // list の要素は PROJECTS と同じ参照なので indexOf で元インデックスが取れる
     function buildProjectRows(list) {
       if (list.length === 0) {
-        return `<tr><td colspan="5" class="px-6 py-12 text-center text-sm text-gray-600">
+        return `<tr><td colspan="6"
+          class="px-6 py-12 text-center text-sm text-gray-600">
           <i class="fas fa-inbox text-2xl block mb-2"></i>該当する案件がありません
         </td></tr>`;
       }
       return list.map(p => {
-        const idx = PROJECTS.indexOf(p);
+        const idx  = PROJECTS.indexOf(p);
+        const type = p.projectType || '—';
         return `
           <tr onclick="openDrawer(${idx})"
             class="border-b border-[#2a2545] hover:bg-indigo-500/[0.05]
                    transition-colors cursor-pointer group">
-            <td class="px-5 py-4 text-sm text-gray-400 whitespace-nowrap
-                        group-hover:text-gray-300 transition-colors">${escapeHtml(p.client)}</td>
-            <td class="px-5 py-4 text-sm text-gray-100 font-medium">
-              <span class="group-hover:text-indigo-300 transition-colors">${escapeHtml(p.name)}</span>
+            <td class="px-5 py-3.5 text-sm text-gray-400 whitespace-nowrap">
+              <span class="block max-w-[160px] truncate group-hover:text-gray-300 transition-colors">
+                ${escapeHtml(p.client || '—')}
+              </span>
             </td>
-            <td class="px-5 py-4 text-sm whitespace-nowrap">${fmtDue(p.due)}</td>
-            <td class="px-5 py-4 whitespace-nowrap">${statusBadge(p.status)}</td>
-            <td class="px-5 py-4 text-sm text-gray-300 whitespace-nowrap text-right">${fmtBudget(p.budget)}</td>
+            <td class="px-5 py-3.5 text-sm text-gray-100 font-medium">
+              <span class="block max-w-[240px] truncate group-hover:text-indigo-300 transition-colors">
+                ${escapeHtml(p.name || '（名称未設定）')}
+              </span>
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap">
+              <span class="text-[11px] text-gray-500 bg-[#1c1930] border border-[#2a2545]
+                           px-2 py-0.5 rounded-full whitespace-nowrap">
+                ${escapeHtml(type)}
+              </span>
+            </td>
+            <td class="px-5 py-3.5 text-sm whitespace-nowrap">${fmtDue(p.due)}</td>
+            <td class="px-5 py-3.5 whitespace-nowrap">${statusBadge(p.status)}</td>
+            <td class="px-5 py-3.5 text-sm text-gray-300 whitespace-nowrap text-right">
+              ${fmtBudget(p.budget)}
+            </td>
           </tr>`;
       }).join('');
     }
 
-    // ── Search ─────────────────────────────────────────────────
-    function filterProjects(query) {
-      const q = query.trim().toLowerCase();
-      const filtered = q
+    // ── applyProjectsView: filter → sort → render ───────────────
+    function applyProjectsView() {
+      const q = projectsQuery.trim().toLowerCase();
+
+      // 1. Filter
+      let list = q
         ? PROJECTS.filter(p =>
-            p.client.toLowerCase().includes(q) ||
-            p.name.toLowerCase().includes(q)
+            (p.client || '').toLowerCase().includes(q) ||
+            (p.name   || '').toLowerCase().includes(q)
           )
-        : PROJECTS;
-      const tbody    = document.getElementById('projectsTbody');
-      const countEl  = document.getElementById('projectsCount');
-      if (tbody)   tbody.innerHTML = buildProjectRows(filtered);
-      if (countEl) countEl.textContent = `${filtered.length} 件`;
+        : [...PROJECTS]; // 浅いコピーでソートしても PROJECTS 本体を壊さない
+
+      // 2. Sort
+      switch (projectsSort) {
+        case 'due-asc':
+          list.sort((a, b) => (a.due || '9999-12-31').localeCompare(b.due || '9999-12-31'));
+          break;
+        case 'due-desc':
+          list.sort((a, b) => (b.due || '').localeCompare(a.due || ''));
+          break;
+        case 'updated-desc':
+          list.sort((a, b) => (b.updatedAt || b.createdAt || '').localeCompare(a.updatedAt || a.createdAt || ''));
+          break;
+        case 'budget-desc':
+          list.sort((a, b) => Number(b.budget || 0) - Number(a.budget || 0));
+          break;
+        case 'client-asc':
+          list.sort((a, b) => (a.client || '').localeCompare(b.client || '', 'ja'));
+          break;
+      }
+
+      // 3. Render
+      const tbody   = document.getElementById('projectsTbody');
+      const countEl = document.getElementById('projectsCount');
+      if (tbody)   tbody.innerHTML = buildProjectRows(list);
+      if (countEl) countEl.textContent = `${list.length} 件`;
+    }
+
+    // ── filterProjects: search input → state → view ─────────────
+    function filterProjects(value) {
+      projectsQuery = value;
+      applyProjectsView();
+    }
+
+    // ── refreshProjectsTable: 保存/削除後の再描画ヘルパー ─────────
+    function refreshProjectsTable(clearSearch = false) {
+      if (clearSearch) {
+        projectsQuery = '';
+        const searchEl = document.getElementById('projectsSearch');
+        if (searchEl) searchEl.value = '';
+      }
+      applyProjectsView();
     }
 
     // ── Render projects page ────────────────────────────────────
     function renderProjects() {
+      const sortOptionsHtml = SORT_OPTIONS.map(o =>
+        `<option value="${o.value}"${o.value === projectsSort ? ' selected' : ''}>${o.label}</option>`
+      ).join('');
+
       return `
         <div class="space-y-5">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -640,44 +847,61 @@
               <h2 class="text-lg font-bold text-white">デザイン案件管理</h2>
               <p class="text-xs text-gray-500 mt-0.5">進行中・完了案件の一覧 — 行をクリックで詳細を開く</p>
             </div>
-            <button class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold
-                           bg-gradient-to-r from-indigo-500 to-purple-600
-                           hover:from-indigo-400 hover:to-purple-500
-                           text-white shadow-lg shadow-indigo-500/25 transition-all self-start sm:self-auto">
+            <button onclick="createProject()"
+              class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
+                     bg-gradient-to-r from-indigo-500 to-purple-600
+                     hover:from-indigo-400 hover:to-purple-500
+                     text-white shadow-lg shadow-indigo-500/25 transition-all self-start sm:self-auto
+                     whitespace-nowrap">
               <i class="fas fa-plus text-xs"></i>新規追加
             </button>
           </div>
 
           <div class="bg-[#1c1930] border border-[#2a2545] rounded-2xl overflow-hidden">
-            <div class="px-5 py-4 border-b border-[#2a2545] flex flex-col sm:flex-row sm:items-center gap-3">
-              <div class="relative flex-1 max-w-sm">
+
+            <!-- ツールバー：検索 + ソート + 件数 -->
+            <div class="px-5 py-3.5 border-b border-[#2a2545] flex flex-wrap items-center gap-2.5">
+              <!-- 検索 -->
+              <div class="relative min-w-0 flex-1" style="min-width: 160px;">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 text-xs pointer-events-none"></i>
                 <input id="projectsSearch" type="text"
+                  value="${escapeHtml(projectsQuery)}"
                   placeholder="案件名・クライアント名で検索…"
                   oninput="filterProjects(this.value)"
                   class="w-full bg-[#13111e] border border-[#2a2545] rounded-xl
-                         pl-8 pr-4 py-2 text-sm text-gray-200 placeholder-gray-600
+                         pl-8 pr-3 py-2 text-sm text-gray-200 placeholder-gray-600
                          focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30
                          transition-colors" />
               </div>
-              <p class="text-xs text-gray-600 flex-shrink-0">
+              <!-- 並び替え -->
+              <select
+                onchange="projectsSort=this.value; applyProjectsView()"
+                class="proj-sort-select flex-shrink-0">
+                ${sortOptionsHtml}
+              </select>
+              <!-- 件数 -->
+              <p class="text-xs text-gray-600 flex-shrink-0 ml-auto">
                 合計 <span id="projectsCount" class="text-gray-400 font-semibold">${PROJECTS.length} 件</span>
               </p>
             </div>
+
+            <!-- テーブル（横スクロール前提） -->
             <div class="overflow-x-auto">
-              <table class="w-full min-w-[640px]">
+              <table class="w-full" style="min-width: 900px;">
                 <thead>
                   <tr class="border-b border-[#2a2545]">
-                    <th class="px-5 py-3 text-left text-[11px] font-semibold text-gray-600 uppercase tracking-wider">クライアント</th>
-                    <th class="px-5 py-3 text-left text-[11px] font-semibold text-gray-600 uppercase tracking-wider">プロジェクト名</th>
-                    <th class="px-5 py-3 text-left text-[11px] font-semibold text-gray-600 uppercase tracking-wider">納期</th>
-                    <th class="px-5 py-3 text-left text-[11px] font-semibold text-gray-600 uppercase tracking-wider">ステータス</th>
-                    <th class="px-5 py-3 text-right text-[11px] font-semibold text-gray-600 uppercase tracking-wider">予算</th>
+                    <th class="px-5 py-3 text-left text-[11px] font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">クライアント</th>
+                    <th class="px-5 py-3 text-left text-[11px] font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">プロジェクト名</th>
+                    <th class="px-5 py-3 text-left text-[11px] font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">種別</th>
+                    <th class="px-5 py-3 text-left text-[11px] font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">納期</th>
+                    <th class="px-5 py-3 text-left text-[11px] font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">ステータス</th>
+                    <th class="px-5 py-3 text-right text-[11px] font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">予算</th>
                   </tr>
                 </thead>
-                <tbody id="projectsTbody">${buildProjectRows(PROJECTS)}</tbody>
+                <tbody id="projectsTbody"></tbody>
               </table>
             </div>
+
           </div>
         </div>`;
     }
@@ -715,9 +939,53 @@
       void area.offsetWidth;
       area.classList.add('page-enter');
       area.innerHTML = page === 'home' ? homeHTML : renderPage(page);
+
+      // projects ページは HTML 設定後に applyProjectsView で tbody を描画
+      if (page === 'projects') {
+        projectsQuery = ''; // ページ遷移時は検索リセット
+        applyProjectsView();
+      }
     }
 
-    // ── Drawer ─────────────────────────────────────────────────
+    // ── [A] 新規案件作成 ────────────────────────────────────────
+    function createProject() {
+      const now = new Date().toISOString();
+      const newProject = {
+        client:      '',
+        name:        '',
+        due:         todayPlusDays(7),
+        status:      '企画',
+        budget:      '',
+        projectType: 'WEBサイト制作',
+        memo:        '',
+        draft:       '',
+        script:      '',
+        refs:        [],
+        createdAt:   now,
+        updatedAt:   now,
+      };
+
+      PROJECTS.unshift(newProject);
+      saveProjectsToStorage();
+      refreshProjectsTable(true);
+      openDrawer(0);
+    }
+
+    // ── [B] 案件削除 ────────────────────────────────────────────
+    function deleteProject() {
+      if (drawerProjectIndex < 0) return;
+      const p    = PROJECTS[drawerProjectIndex];
+      const name = p.name || '（名称未設定）';
+      if (!confirm(`「${name}」を削除しますか？\nこの操作は元に戻せません。`)) return;
+
+      PROJECTS.splice(drawerProjectIndex, 1);
+      saveProjectsToStorage();
+      closeDrawer();
+      refreshProjectsTable(true);
+      showToast('案件を削除しました', 'warn');
+    }
+
+    // ── Drawer open / close ─────────────────────────────────────
     let drawerProjectIndex = -1;
     let drawerRefs         = [];
 
@@ -726,15 +994,20 @@
       const p = PROJECTS[idx];
       drawerRefs = JSON.parse(JSON.stringify(p.refs || []));
 
-      document.getElementById('drawerTitle').textContent  = p.name;
-      document.getElementById('drawerClient').value       = p.client;
-      document.getElementById('drawerName').value         = p.name;
-      document.getElementById('drawerStatus').value       = p.status;
-      document.getElementById('drawerDue').value          = p.due;
-      document.getElementById('drawerBudget').value       = p.budget;
-      document.getElementById('drawerMemo').value         = p.memo   || '';
-      document.getElementById('drawerDraft').value        = p.draft  || '';
-      document.getElementById('drawerScript').value       = p.script || '';
+      document.getElementById('drawerTitle').textContent  = p.name || '（名称未設定）';
+      document.getElementById('drawerClient').value       = p.client      || '';
+      document.getElementById('drawerName').value         = p.name        || '';
+      document.getElementById('drawerStatus').value       = p.status      || '企画';
+      document.getElementById('drawerDue').value          = p.due         || '';
+      document.getElementById('drawerBudget').value       = (p.budget !== '' && p.budget != null) ? p.budget : '';
+      document.getElementById('drawerMemo').value         = p.memo        || '';
+      document.getElementById('drawerDraft').value        = p.draft       || '';
+      document.getElementById('drawerScript').value       = p.script      || '';
+
+      renderTypeOptions(p.projectType);
+
+      const typePanel = document.getElementById('typeManagerPanel');
+      if (typePanel) typePanel.classList.add('hidden');
 
       switchTab('memo');
       renderDrawerRefs();
@@ -745,14 +1018,14 @@
     }
 
     function closeDrawer() {
-      if (drawerProjectIndex === -1 &&
-          document.getElementById('drawer').classList.contains('translate-x-full')) return;
+      if (document.getElementById('drawer').classList.contains('translate-x-full')) return;
       document.getElementById('drawer').classList.add('translate-x-full');
       document.getElementById('drawerOverlay').classList.add('hidden');
       drawerProjectIndex = -1;
       document.body.style.overflow = '';
     }
 
+    // ── Tabs ────────────────────────────────────────────────────
     function switchTab(tab) {
       ['memo', 'draft', 'script', 'refs'].forEach(t => {
         const content = document.getElementById('tab-' + t);
@@ -762,6 +1035,7 @@
       });
     }
 
+    // ── 参考資料 ────────────────────────────────────────────────
     function renderDrawerRefs() {
       const container = document.getElementById('refsList');
       if (!container) return;
@@ -811,52 +1085,102 @@
       renderDrawerRefs();
     }
 
-    function showToast(msg) {
-      const t = document.createElement('div');
-      t.textContent = msg;
-      t.className = [
-        'fixed bottom-6 right-6 z-[100]',
-        'bg-emerald-500 text-white text-sm font-semibold',
-        'px-4 py-2.5 rounded-xl shadow-xl',
-        'opacity-0 transition-opacity duration-200 pointer-events-none',
-      ].join(' ');
-      document.body.appendChild(t);
-      requestAnimationFrame(() => { t.style.opacity = '1'; });
-      setTimeout(() => {
-        t.style.opacity = '0';
-        setTimeout(() => t.remove(), 200);
-      }, 2000);
+    // ── [C] 種別管理 ───────────────────────────────────────────
+    function renderTypeOptions(selectedType) {
+      const sel = document.getElementById('drawerProjectType');
+      if (!sel) return;
+      sel.innerHTML = PROJECT_TYPES.map(t =>
+        `<option value="${escapeHtml(t)}"${t === selectedType ? ' selected' : ''}>${escapeHtml(t)}</option>`
+      ).join('');
+      if (!PROJECT_TYPES.includes(selectedType) && PROJECT_TYPES.length > 0) {
+        sel.value = PROJECT_TYPES[0];
+      }
     }
 
+    function renderTypeList() {
+      const container = document.getElementById('typeList');
+      if (!container) return;
+      if (PROJECT_TYPES.length === 0) {
+        container.innerHTML = '<p class="text-xs text-gray-600 py-1">種別がありません</p>';
+        return;
+      }
+      container.innerHTML = PROJECT_TYPES.map((t, i) => {
+        const inUse = PROJECTS.some(p => p.projectType === t);
+        return `
+          <div class="flex items-center justify-between py-1 px-2 rounded-lg hover:bg-white/[0.03]">
+            <span class="text-xs text-gray-300 truncate flex-1">${escapeHtml(t)}</span>
+            ${inUse
+              ? `<span class="text-[10px] text-gray-600 ml-2 flex-shrink-0">使用中</span>`
+              : `<button onclick="deleteProjectType(${i})"
+                   class="ml-2 p-1 flex-shrink-0 rounded text-gray-600
+                          hover:text-red-400 hover:bg-red-400/10 transition">
+                   <i class="fas fa-trash-can text-[10px]"></i>
+                 </button>`
+            }
+          </div>`;
+      }).join('');
+    }
+
+    function toggleTypeManager() {
+      const panel = document.getElementById('typeManagerPanel');
+      if (!panel) return;
+      const opening = panel.classList.contains('hidden');
+      panel.classList.toggle('hidden', !opening);
+      if (opening) renderTypeList();
+    }
+
+    function addProjectType() {
+      const input = document.getElementById('newTypeInput');
+      if (!input) return;
+      const name = input.value.trim();
+      if (!name) { showToast('種別名を入力してください', 'warn'); return; }
+      if (PROJECT_TYPES.includes(name)) { showToast('その種別は既に存在します', 'warn'); return; }
+      PROJECT_TYPES.push(name);
+      saveTypesToStorage();
+      input.value = '';
+      const currentType = document.getElementById('drawerProjectType')?.value;
+      renderTypeOptions(currentType);
+      renderTypeList();
+      showToast(`「${name}」を追加しました`);
+    }
+
+    function deleteProjectType(idx) {
+      const type = PROJECT_TYPES[idx];
+      if (!type) return;
+      if (PROJECTS.some(p => p.projectType === type)) {
+        showToast('この種別は使用中のため削除できません', 'error');
+        return;
+      }
+      PROJECT_TYPES.splice(idx, 1);
+      saveTypesToStorage();
+      const sel = document.getElementById('drawerProjectType');
+      const cur = sel?.value;
+      renderTypeOptions(cur === type ? (PROJECT_TYPES[0] || '') : cur);
+      renderTypeList();
+      showToast(`「${type}」を削除しました`);
+    }
+
+    // ── Save drawer ─────────────────────────────────────────────
     function saveDrawer() {
       if (drawerProjectIndex < 0) return;
       const p         = PROJECTS[drawerProjectIndex];
-      const newClient = document.getElementById('drawerClient').value.trim();
-      const newName   = document.getElementById('drawerName').value.trim();
-      const newBudget = parseInt(document.getElementById('drawerBudget').value, 10);
+      const budgetStr = document.getElementById('drawerBudget').value.trim();
+      const newBudget = budgetStr === '' ? '' : parseInt(budgetStr, 10);
 
-      if (newClient) p.client = newClient;
-      if (newName)   p.name   = newName;
-      p.status = document.getElementById('drawerStatus').value;
-      p.due    = document.getElementById('drawerDue').value || p.due;
-      if (!isNaN(newBudget)) p.budget = newBudget;
-      p.memo   = document.getElementById('drawerMemo').value;
-      p.draft  = document.getElementById('drawerDraft').value;
-      p.script = document.getElementById('drawerScript').value;
-      p.refs   = JSON.parse(JSON.stringify(drawerRefs));
+      p.client      = document.getElementById('drawerClient').value.trim();
+      p.name        = document.getElementById('drawerName').value.trim();
+      p.status      = document.getElementById('drawerStatus').value;
+      p.due         = document.getElementById('drawerDue').value || p.due;
+      p.budget      = (budgetStr === '' || !isNaN(newBudget)) ? newBudget : p.budget;
+      p.projectType = document.getElementById('drawerProjectType')?.value || PROJECT_TYPES[0] || '';
+      p.memo        = document.getElementById('drawerMemo').value;
+      p.draft       = document.getElementById('drawerDraft').value;
+      p.script      = document.getElementById('drawerScript').value;
+      p.refs        = JSON.parse(JSON.stringify(drawerRefs));
+      p.updatedAt   = new Date().toISOString(); // 更新日時を記録
 
       saveProjectsToStorage();
-
-      // Re-render table (respecting current search)
-      const q = (document.getElementById('projectsSearch')?.value || '').toLowerCase().trim();
-      const filtered = q
-        ? PROJECTS.filter(pr => pr.client.toLowerCase().includes(q) || pr.name.toLowerCase().includes(q))
-        : PROJECTS;
-      const tbody   = document.getElementById('projectsTbody');
-      const countEl = document.getElementById('projectsCount');
-      if (tbody)   tbody.innerHTML = buildProjectRows(filtered);
-      if (countEl) countEl.textContent = `${filtered.length} 件`;
-
+      refreshProjectsTable();
       showToast('保存しました');
       closeDrawer();
     }
@@ -915,7 +1239,6 @@
 
       document.getElementById('mobileMenuBtn')?.addEventListener('click', openSidebar);
 
-      // ESC → close drawer
       document.addEventListener('keydown', e => {
         if (e.key === 'Escape') closeDrawer();
       });
