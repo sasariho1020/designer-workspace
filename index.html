@@ -139,6 +139,42 @@
       transition: border-color 0.15s; font-family: inherit;
     }
     .proj-sort-select:focus { border-color: rgba(99,102,241,0.6); }
+
+    /* ── Projects tab (segment) ── */
+    .proj-tab {
+      display: inline-flex; align-items: center;
+      padding: 7px 14px; border-radius: 10px;
+      font-size: 0.8rem; font-weight: 600;
+      border: 1px solid transparent; transition: all 0.15s;
+      color: #6b7280; background: transparent; white-space: nowrap;
+    }
+    .proj-tab:hover { color: #d1d5db; }
+    .proj-tab.active {
+      background: rgba(99, 102, 241, 0.15);
+      color: #a5b4fc;
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    /* ── Workspace select (header) ── */
+    .ws-select {
+      background: #13111e; border: 1px solid #2a2545; border-radius: 0.75rem;
+      padding: 6px 10px; font-size: 0.75rem; color: #a5b4fc; font-weight: 600;
+      outline: none; cursor: pointer; max-width: 148px;
+      transition: border-color 0.15s; font-family: inherit;
+    }
+    .ws-select:focus { border-color: rgba(99,102,241,0.6); }
+
+    /* ── Workspace modal ── */
+    .ws-modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+      z-index: 90; display: flex; align-items: center; justify-content: center;
+      padding: 16px; backdrop-filter: blur(2px);
+    }
+    .ws-modal-panel {
+      background: #0f0f1a; border: 1px solid #2a2545; border-radius: 1.25rem;
+      width: 100%; max-width: 440px; box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
   </style>
 </head>
 
@@ -211,6 +247,15 @@
       </div>
       <div class="flex items-center gap-3">
         <span id="headerDate" class="hidden sm:block text-xs text-gray-500"></span>
+        <!-- Workspace switcher -->
+        <div class="flex items-center gap-1">
+          <select id="wsSelect" onchange="switchWorkspace(this.value)"
+            class="ws-select hidden sm:block" title="ワークスペース切替"></select>
+          <button onclick="openWsModal()" title="ワークスペース管理"
+            class="p-2 rounded-xl bg-[#1a1a2e] text-indigo-400 hover:bg-[#252540] transition">
+            <i class="fas fa-layer-group text-sm"></i>
+          </button>
+        </div>
         <button id="darkToggle" title="ダークモード切替"
           class="p-2 rounded-xl bg-[#1a1a2e] text-yellow-400 hover:bg-[#252540] transition">
           <i class="fas fa-sun text-sm"></i>
@@ -515,6 +560,46 @@
   </div>
   <!-- ========== /DRAWER ========== -->
 
+  <!-- ========== WORKSPACE MODAL ========== -->
+  <div id="wsModal" class="ws-modal-backdrop hidden" onclick="if(event.target===this)closeWsModal()">
+    <div class="ws-modal-panel">
+
+      <!-- Modal header -->
+      <div class="px-5 py-4 border-b border-[#2a2545] flex items-center justify-between">
+        <div>
+          <p class="text-[10px] text-indigo-400 font-semibold uppercase tracking-widest mb-0.5">Workspace</p>
+          <h3 class="text-sm font-bold text-white">ワークスペース管理</h3>
+        </div>
+        <button onclick="closeWsModal()"
+          class="p-2 rounded-xl text-gray-500 hover:text-white hover:bg-[#1a1a2e] transition">
+          <i class="fas fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <!-- Workspace list -->
+      <div id="wsModalList" class="px-4 py-3 space-y-1 max-h-60 overflow-y-auto"></div>
+
+      <!-- Add new workspace -->
+      <div class="px-5 pb-5 border-t border-[#2a2545] pt-4">
+        <p class="text-[10px] text-gray-600 uppercase tracking-wider mb-2.5">新しいワークスペース</p>
+        <div class="flex gap-2">
+          <input id="wsNewNameInput" type="text" placeholder="ワークスペース名…" maxlength="40"
+            class="dw-input flex-1" style="min-height: 38px; padding: 8px 10px; font-size: 0.8rem;"
+            onkeydown="if(event.key==='Enter') confirmCreateWorkspace()" />
+          <button onclick="confirmCreateWorkspace()"
+            class="flex-shrink-0 px-3 rounded-xl text-xs font-semibold
+                   bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30
+                   border border-indigo-500/20 transition-colors"
+            style="min-height: 38px;">
+            <i class="fas fa-plus mr-1"></i>作成
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <!-- ========== /WORKSPACE MODAL ========== -->
+
   <script>
     /* ============================================================
        Designer Workspace — script
@@ -542,21 +627,62 @@
 
     // ── View state ─────────────────────────────────────────────
     let projectsQuery = '';
-    let projectsSort  = 'due-asc';
+    let projectsSort  = localStorage.getItem('dw_projectsSort') || 'due-asc';
+    let projectsTab   = 'active'; // 'active' | 'completed'
+    let doneGroupOpen = {}; // { 'YYYY-MM': bool } — 納品済みグループの開閉状態
+
+    // ── Workspace helpers ───────────────────────────────────────
+    function generateId() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    }
+
+    function loadWorkspaces() {
+      try {
+        const raw = localStorage.getItem('dw_workspaces');
+        if (raw) return JSON.parse(raw);
+      } catch(e) {}
+      return null;
+    }
+
+    function saveWorkspaces() {
+      localStorage.setItem('dw_workspaces', JSON.stringify(WORKSPACES));
+    }
+
+    // ── Workspace initialization ────────────────────────────────
+    let WORKSPACES = loadWorkspaces();
+    let activeWorkspaceId = localStorage.getItem('dw_activeWorkspaceId');
+
+    if (!WORKSPACES || WORKSPACES.length === 0) {
+      // 初回 or 新機能初回: デフォルトワークスペースを作成
+      const defaultId = generateId();
+      WORKSPACES = [{ id: defaultId, name: 'りほ（デフォルト）', createdAt: new Date().toISOString() }];
+      saveWorkspaces();
+      activeWorkspaceId = defaultId;
+      localStorage.setItem('dw_activeWorkspaceId', activeWorkspaceId);
+      // 旧キー（dw_projects / dw_projectTypes）があればデフォルトWSへ移行
+      const oldP = localStorage.getItem('dw_projects');
+      const oldT = localStorage.getItem('dw_projectTypes');
+      if (oldP) { localStorage.setItem('dw_projects__' + defaultId, oldP);      localStorage.removeItem('dw_projects'); }
+      if (oldT) { localStorage.setItem('dw_projectTypes__' + defaultId, oldT); localStorage.removeItem('dw_projectTypes'); }
+    } else if (!WORKSPACES.find(w => w.id === activeWorkspaceId)) {
+      // 選択中WSが存在しない場合は先頭へフォールバック
+      activeWorkspaceId = WORKSPACES[0].id;
+      localStorage.setItem('dw_activeWorkspaceId', activeWorkspaceId);
+    }
 
     // ── Project types ──────────────────────────────────────────
     const DEFAULT_PROJECT_TYPES = ['WEBサイト制作', 'バナー', 'ロゴ', 'LP', 'SNS投稿画像', 'チラシ'];
 
     function loadTypesFromStorage() {
       try {
-        const raw = localStorage.getItem('dw_projectTypes');
+        const raw = localStorage.getItem('dw_projectTypes__' + activeWorkspaceId);
         if (raw) return JSON.parse(raw);
       } catch (e) {}
       return null;
     }
 
     function saveTypesToStorage() {
-      localStorage.setItem('dw_projectTypes', JSON.stringify(PROJECT_TYPES));
+      localStorage.setItem('dw_projectTypes__' + activeWorkspaceId, JSON.stringify(PROJECT_TYPES));
     }
 
     let PROJECT_TYPES = loadTypesFromStorage() || [...DEFAULT_PROJECT_TYPES];
@@ -638,29 +764,43 @@
     // ── localStorage helpers ────────────────────────────────────
     function loadProjectsFromStorage() {
       try {
-        const raw = localStorage.getItem('dw_projects');
+        const raw = localStorage.getItem('dw_projects__' + activeWorkspaceId);
         if (raw) return JSON.parse(raw);
       } catch (e) {}
       return null;
     }
 
     function saveProjectsToStorage() {
-      localStorage.setItem('dw_projects', JSON.stringify(PROJECTS));
+      localStorage.setItem('dw_projects__' + activeWorkspaceId, JSON.stringify(PROJECTS));
+    }
+
+    function loadDoneGroupOpen() {
+      try {
+        const raw = localStorage.getItem('dw_doneGroupOpen__' + activeWorkspaceId);
+        if (raw) return JSON.parse(raw);
+      } catch(e) {}
+      return {};
+    }
+
+    function saveDoneGroupOpen() {
+      localStorage.setItem('dw_doneGroupOpen__' + activeWorkspaceId, JSON.stringify(doneGroupOpen));
     }
 
     // ── Load projects + complement missing timestamps ────────────
     let PROJECTS = loadProjectsFromStorage() || JSON.parse(JSON.stringify(DEFAULT_PROJECTS));
 
-    // 既存データに createdAt/updatedAt が無い場合を補完
-    (function complementTimestamps() {
+    // createdAt/updatedAt が無い既存データを補完（WS切替後にも呼べるよう通常関数化）
+    function complementTimestamps() {
       let dirty = false;
-      const epoch = new Date(0).toISOString(); // 最古扱い
+      const epoch = new Date(0).toISOString();
       PROJECTS.forEach(p => {
         if (!p.createdAt) { p.createdAt = epoch; dirty = true; }
         if (!p.updatedAt) { p.updatedAt = p.createdAt; dirty = true; }
       });
       if (dirty) saveProjectsToStorage();
-    })();
+    }
+    complementTimestamps();
+    doneGroupOpen = loadDoneGroupOpen();
 
     // ── Utility helpers ────────────────────────────────────────
     const STATUS_BADGE = {
@@ -756,12 +896,12 @@
             class="border-b border-[#2a2545] hover:bg-indigo-500/[0.05]
                    transition-colors cursor-pointer group">
             <td class="px-5 py-3.5 text-sm text-gray-400 whitespace-nowrap">
-              <span class="block max-w-[160px] truncate group-hover:text-gray-300 transition-colors">
+              <span class="block max-w-[28vw] sm:max-w-[180px] lg:max-w-[220px] truncate group-hover:text-gray-300 transition-colors">
                 ${escapeHtml(p.client || '—')}
               </span>
             </td>
             <td class="px-5 py-3.5 text-sm text-gray-100 font-medium">
-              <span class="block max-w-[240px] truncate group-hover:text-indigo-300 transition-colors">
+              <span class="block max-w-[42vw] sm:max-w-[360px] lg:max-w-[520px] truncate group-hover:text-indigo-300 transition-colors">
                 ${escapeHtml(p.name || '（名称未設定）')}
               </span>
             </td>
@@ -782,15 +922,19 @@
 
     // ── applyProjectsView: filter → sort → render ───────────────
     function applyProjectsView() {
-      const q = projectsQuery.trim().toLowerCase();
+      // 0. Tab filter
+      const tabBase = projectsTab === 'completed'
+        ? PROJECTS.filter(p => p.status === '納品済み')
+        : PROJECTS.filter(p => p.status !== '納品済み');
 
-      // 1. Filter
+      // 1. Search filter
+      const q = projectsQuery.trim().toLowerCase();
       let list = q
-        ? PROJECTS.filter(p =>
+        ? tabBase.filter(p =>
             (p.client || '').toLowerCase().includes(q) ||
             (p.name   || '').toLowerCase().includes(q)
           )
-        : [...PROJECTS]; // 浅いコピーでソートしても PROJECTS 本体を壊さない
+        : [...tabBase];
 
       // 2. Sort
       switch (projectsSort) {
@@ -798,7 +942,7 @@
           list.sort((a, b) => (a.due || '9999-12-31').localeCompare(b.due || '9999-12-31'));
           break;
         case 'due-desc':
-          list.sort((a, b) => (b.due || '').localeCompare(a.due || ''));
+          list.sort((a, b) => (b.due || '0000-01-01').localeCompare(a.due || '0000-01-01'));
           break;
         case 'updated-desc':
           list.sort((a, b) => (b.updatedAt || b.createdAt || '').localeCompare(a.updatedAt || a.createdAt || ''));
@@ -814,8 +958,30 @@
       // 3. Render
       const tbody   = document.getElementById('projectsTbody');
       const countEl = document.getElementById('projectsCount');
-      if (tbody)   tbody.innerHTML = buildProjectRows(list);
+      if (tbody) {
+        tbody.innerHTML = (projectsTab === 'completed')
+          ? buildCompletedGroupedRows(list)
+          : buildProjectRows(list);
+      }
       if (countEl) countEl.textContent = `${list.length} 件`;
+    }
+
+    // ── switchProjectsTab: タブ切替 ─────────────────────────────
+    function switchProjectsTab(tab) {
+      projectsTab = tab;
+      // タブボタンのactive状態を更新
+      ['active', 'completed'].forEach(t => {
+        const btn = document.getElementById('tabBtn-proj-' + t);
+        if (btn) btn.classList.toggle('active', t === tab);
+      });
+      // 納品済みタブへ切替時: 納期昇順のままならデフォルトを更新順へ
+      if (tab === 'completed' && projectsSort === 'due-asc') {
+        projectsSort = 'updated-desc';
+        localStorage.setItem('dw_projectsSort', projectsSort);
+        const sortSel = document.getElementById('projectsSortEl');
+        if (sortSel) sortSel.value = projectsSort;
+      }
+      applyProjectsView();
     }
 
     // ── filterProjects: search input → state → view ─────────────
@@ -834,11 +1000,123 @@
       applyProjectsView();
     }
 
+    // ── 納品済みグループ化ヘルパー ──────────────────────────────
+    // 基準日: updatedAt > due > createdAt
+    function getGroupDate(p) {
+      if (p.updatedAt) return p.updatedAt;
+      if (p.due)       return p.due + 'T00:00:00.000Z';
+      return p.createdAt || new Date(0).toISOString();
+    }
+
+    function getGroupKey(p) {
+      const d = new Date(getGroupDate(p));
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function isGroupOpen(key) {
+      if (key in doneGroupOpen) return doneGroupOpen[key];
+      // デフォルト: 当月・前月は開く、それ以前は閉じる
+      const now = new Date();
+      const thisYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const prev   = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const prevYM = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
+      return key === thisYM || key === prevYM;
+    }
+
+    function toggleDoneGroup(key) {
+      doneGroupOpen[key] = !isGroupOpen(key);
+      saveDoneGroupOpen();
+      applyProjectsView();
+    }
+
+    function buildCompletedGroupedRows(list) {
+      if (list.length === 0) {
+        return `<tr><td colspan="6"
+          class="px-6 py-12 text-center text-sm text-gray-600">
+          <i class="fas fa-inbox text-2xl block mb-2"></i>該当する案件がありません
+        </td></tr>`;
+      }
+
+      // グループ化
+      const groups = {};
+      list.forEach(p => {
+        const key = getGroupKey(p);
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(p);
+      });
+
+      // グループ内を基準日降順でソート
+      Object.values(groups).forEach(items => {
+        items.sort((a, b) => getGroupDate(b).localeCompare(getGroupDate(a)));
+      });
+
+      // グループを新しい月順（降順）に並べる
+      const sortedKeys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+
+      return sortedKeys.map(key => {
+        const items   = groups[key];
+        const open    = isGroupOpen(key);
+        const [y, m]  = key.split('-');
+        const label   = `${y}年${parseInt(m, 10)}月`;
+        const chevron = open ? 'fa-chevron-up' : 'fa-chevron-down';
+
+        const headerRow = `
+          <tr onclick="toggleDoneGroup('${key}')"
+            class="cursor-pointer select-none bg-[#13111e] hover:bg-[#1a1830]
+                   transition-colors border-b border-[#2a2545]">
+            <td colspan="6" class="px-5" style="height:44px;">
+              <div class="flex items-center gap-2.5">
+                <i class="fas ${chevron} text-[10px] text-gray-500 w-3 text-center"></i>
+                <span class="text-sm font-semibold text-gray-300">${label}</span>
+                <span class="ml-1 text-[11px] text-gray-600">${items.length} 件</span>
+              </div>
+            </td>
+          </tr>`;
+
+        if (!open) return headerRow;
+
+        const dataRows = items.map(p => {
+          const idx  = PROJECTS.indexOf(p);
+          const type = p.projectType || '—';
+          return `
+            <tr onclick="openDrawer(${idx})"
+              class="border-b border-[#2a2545] hover:bg-indigo-500/[0.05]
+                     transition-colors cursor-pointer group">
+              <td class="px-5 py-3.5 text-sm text-gray-400 whitespace-nowrap">
+                <span class="block max-w-[28vw] sm:max-w-[180px] lg:max-w-[220px] truncate group-hover:text-gray-300 transition-colors">
+                  ${escapeHtml(p.client || '—')}
+                </span>
+              </td>
+              <td class="px-5 py-3.5 text-sm text-gray-100 font-medium">
+                <span class="block max-w-[42vw] sm:max-w-[360px] lg:max-w-[520px] truncate group-hover:text-indigo-300 transition-colors">
+                  ${escapeHtml(p.name || '（名称未設定）')}
+                </span>
+              </td>
+              <td class="px-5 py-3.5 whitespace-nowrap">
+                <span class="text-[11px] text-gray-500 bg-[#1c1930] border border-[#2a2545]
+                             px-2 py-0.5 rounded-full whitespace-nowrap">
+                  ${escapeHtml(type)}
+                </span>
+              </td>
+              <td class="px-5 py-3.5 text-sm whitespace-nowrap">${fmtDue(p.due)}</td>
+              <td class="px-5 py-3.5 whitespace-nowrap">${statusBadge(p.status)}</td>
+              <td class="px-5 py-3.5 text-sm text-gray-300 whitespace-nowrap text-right">
+                ${fmtBudget(p.budget)}
+              </td>
+            </tr>`;
+        }).join('');
+
+        return headerRow + dataRows;
+      }).join('');
+    }
+
     // ── Render projects page ────────────────────────────────────
     function renderProjects() {
       const sortOptionsHtml = SORT_OPTIONS.map(o =>
         `<option value="${o.value}"${o.value === projectsSort ? ' selected' : ''}>${o.label}</option>`
       ).join('');
+      const activeTabCount    = PROJECTS.filter(p => p.status !== '納品済み').length;
+      const completedTabCount = PROJECTS.filter(p => p.status === '納品済み').length;
 
       return `
         <div class="space-y-5">
@@ -859,6 +1137,20 @@
 
           <div class="bg-[#1c1930] border border-[#2a2545] rounded-2xl overflow-hidden">
 
+            <!-- タブ：進行中 / 納品済み -->
+            <div class="px-4 py-2.5 border-b border-[#2a2545] flex items-center gap-1.5">
+              <button id="tabBtn-proj-active" onclick="switchProjectsTab('active')"
+                class="proj-tab ${projectsTab === 'active' ? 'active' : ''}">
+                <i class="fas fa-spinner text-[10px] mr-1.5 opacity-80"></i>進行中
+                <span class="ml-1.5 text-[10px] opacity-60">${activeTabCount}</span>
+              </button>
+              <button id="tabBtn-proj-completed" onclick="switchProjectsTab('completed')"
+                class="proj-tab ${projectsTab === 'completed' ? 'active' : ''}">
+                <i class="fas fa-check text-[10px] mr-1.5 opacity-80"></i>納品済み
+                <span class="ml-1.5 text-[10px] opacity-60">${completedTabCount}</span>
+              </button>
+            </div>
+
             <!-- ツールバー：検索 + ソート + 件数 -->
             <div class="px-5 py-3.5 border-b border-[#2a2545] flex flex-wrap items-center gap-2.5">
               <!-- 検索 -->
@@ -874,8 +1166,8 @@
                          transition-colors" />
               </div>
               <!-- 並び替え -->
-              <select
-                onchange="projectsSort=this.value; applyProjectsView()"
+              <select id="projectsSortEl"
+                onchange="projectsSort=this.value; localStorage.setItem('dw_projectsSort', projectsSort); applyProjectsView()"
                 class="proj-sort-select flex-shrink-0">
                 ${sortOptionsHtml}
               </select>
@@ -906,8 +1198,219 @@
         </div>`;
     }
 
+    // ── Relative date helper ────────────────────────────────────
+    function relDateStr(isoStr) {
+      if (!isoStr) return '';
+      const d = new Date(isoStr);
+      const now = new Date();
+      const diffMs  = now - d;
+      const diffMin = Math.floor(diffMs / 60000);
+      const diffH   = Math.floor(diffMs / 3600000);
+      const diffD   = Math.floor(diffMs / 86400000);
+      if (diffMin < 1)  return 'たった今';
+      if (diffMin < 60) return `${diffMin}分前`;
+      if (diffH < 24)   return `${diffH}時間前`;
+      if (diffD === 1)  return '昨日';
+      if (diffD < 7)    return `${diffD}日前`;
+      return d.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
+    }
+
+    // ── Home dashboard (dynamic) ────────────────────────────────
+    function renderHome() {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const d7    = new Date(today); d7.setDate(today.getDate() + 7);
+      const ACTIVE = ['企画', 'デザイン中', 'レビュー中'];
+
+      const activeCount    = PROJECTS.filter(p => ACTIVE.includes(p.status)).length;
+      const completedCount = PROJECTS.filter(p => p.status === '納品済み').length;
+      const urgentCount    = PROJECTS.filter(p => {
+        if (!p.due || !ACTIVE.includes(p.status)) return false;
+        const d = new Date(p.due); return d >= today && d <= d7;
+      }).length;
+
+      // 納期が近い順 top3（進行中 + 納期あり）
+      const nearDeadline = [...PROJECTS]
+        .filter(p => p.due && ACTIVE.includes(p.status))
+        .sort((a, b) => a.due.localeCompare(b.due))
+        .slice(0, 3);
+
+      // 最近更新 top3
+      const recentUpdated = [...PROJECTS]
+        .sort((a, b) => (b.updatedAt || b.createdAt || '').localeCompare(a.updatedAt || a.createdAt || ''))
+        .slice(0, 3);
+
+      // ── 空状態 ──────────────────────────────────────────────
+      if (PROJECTS.length === 0) {
+        return `
+          <div class="flex flex-col items-center justify-center py-24 text-center gap-5">
+            <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center">
+              <i class="fas fa-briefcase text-indigo-400 text-2xl"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-gray-300 mb-1">まだ案件がありません</h2>
+              <p class="text-sm text-gray-500">＋新規追加から最初の案件を作成できます</p>
+            </div>
+            <div class="flex gap-3 flex-wrap justify-center">
+              <button onclick="createProject()"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
+                       bg-gradient-to-r from-indigo-500 to-purple-600 text-white
+                       shadow-lg shadow-indigo-500/25 hover:opacity-90 transition-opacity">
+                <i class="fas fa-plus text-xs"></i>新規追加
+              </button>
+              <button onclick="navigate('projects')"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
+                       border border-[#2a2545] text-gray-400 hover:text-indigo-300
+                       hover:border-indigo-500/40 transition-colors">
+                <i class="fas fa-briefcase text-xs"></i>案件管理へ
+              </button>
+            </div>
+          </div>`;
+      }
+
+      // ── サマリーカード 3枚 ───────────────────────────────────
+      const cardsHtml = `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+          <div class="card-surface bg-[#1c1930] border border-[#2a2545] rounded-2xl p-5
+                      flex flex-col gap-4 hover:border-indigo-500/50 transition-colors cursor-default">
+            <div class="flex items-start justify-between">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
+                          bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30">
+                <i class="fas fa-briefcase text-white text-sm"></i>
+              </div>
+              <span class="text-[10px] font-semibold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">Active</span>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 text-sub mb-1">進行中案件</p>
+              <p class="text-3xl font-extrabold text-white text-main leading-none">${activeCount}</p>
+              <p class="text-xs text-gray-500 text-sub mt-2">全 ${PROJECTS.length} 件中</p>
+            </div>
+          </div>
+
+          <div class="card-surface bg-[#1c1930] border border-[#2a2545] rounded-2xl p-5
+                      flex flex-col gap-4 hover:border-amber-500/50 transition-colors cursor-default">
+            <div class="flex items-start justify-between">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
+                          bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/30">
+                <i class="fas fa-clock text-white text-sm"></i>
+              </div>
+              <span class="text-[10px] font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">今週</span>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 text-sub mb-1">7日以内の締切</p>
+              <p class="text-3xl font-extrabold ${urgentCount > 0 ? 'text-amber-400' : 'text-white text-main'} leading-none">${urgentCount}</p>
+              <p class="text-xs text-gray-500 text-sub mt-2">${urgentCount > 0 ? '要確認' : '余裕あり'}</p>
+            </div>
+          </div>
+
+          <div class="card-surface bg-[#1c1930] border border-[#2a2545] rounded-2xl p-5
+                      flex flex-col gap-4 hover:border-emerald-500/50 transition-colors cursor-default">
+            <div class="flex items-start justify-between">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
+                          bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/30">
+                <i class="fas fa-check-circle text-white text-sm"></i>
+              </div>
+              <span class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">完了</span>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 text-sub mb-1">完了済み案件</p>
+              <p class="text-3xl font-extrabold text-white text-main leading-none">${completedCount}</p>
+              <p class="text-xs text-gray-500 text-sub mt-2">全 ${PROJECTS.length} 件中</p>
+            </div>
+          </div>
+
+        </div>`;
+
+      // ── 納期が近い案件リスト ─────────────────────────────────
+      const nearHtml = nearDeadline.length === 0
+        ? `<li class="py-8 text-center text-sm text-gray-600">
+             <i class="fas fa-calendar-check text-xl block mb-2 opacity-40"></i>
+             納期が近い進行中案件はありません
+           </li>`
+        : nearDeadline.map(p => {
+            const idx = PROJECTS.indexOf(p);
+            return `
+              <li onclick="openDrawer(${idx})"
+                class="flex items-center gap-3 px-5 py-3.5 hover:bg-white/[0.025]
+                       transition-colors cursor-pointer group">
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-200 truncate
+                             group-hover:text-indigo-300 transition-colors">
+                    ${escapeHtml(p.name || '（名称未設定）')}
+                  </p>
+                  <p class="text-xs text-gray-500 mt-0.5 truncate">${escapeHtml(p.client || '—')}</p>
+                </div>
+                <div class="flex-shrink-0 text-sm">${fmtDue(p.due)}</div>
+              </li>`;
+          }).join('');
+
+      // ── 最近更新した案件リスト ───────────────────────────────
+      const recentHtml = recentUpdated.map(p => {
+        const idx = PROJECTS.indexOf(p);
+        const ts  = p.updatedAt || p.createdAt;
+        return `
+          <li onclick="openDrawer(${idx})"
+            class="flex items-center gap-3 px-5 py-3.5 hover:bg-white/[0.025]
+                   transition-colors cursor-pointer group">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-200 truncate
+                         group-hover:text-indigo-300 transition-colors">
+                ${escapeHtml(p.name || '（名称未設定）')}
+              </p>
+              <p class="text-xs text-gray-500 mt-0.5 truncate">${escapeHtml(p.client || '—')}</p>
+            </div>
+            <div class="flex-shrink-0 text-right">
+              ${statusBadge(p.status)}
+              <p class="text-[10px] text-gray-600 mt-1">${relDateStr(ts)}</p>
+            </div>
+          </li>`;
+      }).join('');
+
+      return `
+        <div class="space-y-6">
+          ${cardsHtml}
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+            <div class="bg-[#1c1930] border border-[#2a2545] rounded-2xl overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-[#2a2545] flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-calendar-alt text-amber-400 text-xs"></i>
+                  <h3 class="text-sm font-semibold text-gray-200 text-main">納期が近い案件</h3>
+                </div>
+                <span class="text-xs text-gray-600">進行中 · 期限順</span>
+              </div>
+              <ul class="divide-y divide-[#2a2545]">${nearHtml}</ul>
+            </div>
+
+            <div class="bg-[#1c1930] border border-[#2a2545] rounded-2xl overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-[#2a2545] flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-clock-rotate-left text-indigo-400 text-xs"></i>
+                  <h3 class="text-sm font-semibold text-gray-200 text-main">最近更新した案件</h3>
+                </div>
+                <span class="text-xs text-gray-600">更新順</span>
+              </div>
+              <ul class="divide-y divide-[#2a2545]">${recentHtml}</ul>
+            </div>
+
+          </div>
+
+          <div class="flex justify-center pt-2">
+            <button onclick="navigate('projects')"
+              class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold
+                     border border-[#2a2545] text-gray-400 hover:text-indigo-300
+                     hover:border-indigo-500/40 transition-colors bg-[#1c1930] hover:bg-indigo-500/5">
+              <i class="fas fa-briefcase text-xs"></i>案件管理をひらく
+              <i class="fas fa-arrow-right text-xs"></i>
+            </button>
+          </div>
+        </div>`;
+    }
+
     // ── Page renderer ───────────────────────────────────────────
     function renderPage(page) {
+      if (page === 'home')     return renderHome();
       if (page === 'projects') return renderProjects();
       const meta = PAGE_META[page];
       return `
@@ -922,7 +1425,6 @@
 
     // ── Navigation ─────────────────────────────────────────────
     let currentPage = 'home';
-    let homeHTML    = '';
 
     function navigate(page) {
       if (!PAGE_META[page]) return;
@@ -938,11 +1440,12 @@
       area.classList.remove('page-enter');
       void area.offsetWidth;
       area.classList.add('page-enter');
-      area.innerHTML = page === 'home' ? homeHTML : renderPage(page);
+      area.innerHTML = renderPage(page);
 
       // projects ページは HTML 設定後に applyProjectsView で tbody を描画
       if (page === 'projects') {
         projectsQuery = ''; // ページ遷移時は検索リセット
+        projectsTab = 'active'; // タブをリセット
         applyProjectsView();
       }
     }
@@ -982,6 +1485,10 @@
       saveProjectsToStorage();
       closeDrawer();
       refreshProjectsTable(true);
+      if (currentPage === 'home') {
+        const area = document.getElementById('pageArea');
+        if (area) area.innerHTML = renderHome();
+      }
       showToast('案件を削除しました', 'warn');
     }
 
@@ -1023,6 +1530,153 @@
       document.getElementById('drawerOverlay').classList.add('hidden');
       drawerProjectIndex = -1;
       document.body.style.overflow = '';
+    }
+
+    // ── Workspace management ────────────────────────────────────
+    function renderWsOptions() {
+      const sel = document.getElementById('wsSelect');
+      if (!sel) return;
+      sel.innerHTML = WORKSPACES.map(ws =>
+        `<option value="${ws.id}"${ws.id === activeWorkspaceId ? ' selected' : ''}>${escapeHtml(ws.name)}</option>`
+      ).join('');
+    }
+
+    function renderWsModalList() {
+      const container = document.getElementById('wsModalList');
+      if (!container) return;
+      const isOnly = WORKSPACES.length <= 1;
+      container.innerHTML = WORKSPACES.map(ws => {
+        const isActive = ws.id === activeWorkspaceId;
+        return `
+          <div class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-colors
+                      ${isActive ? 'bg-indigo-500/10 border border-indigo-500/20' : 'hover:bg-white/[0.03] border border-transparent'}">
+            <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0
+                        ${isActive ? 'bg-indigo-500/30' : 'bg-[#2a2545]'}">
+              <i class="fas fa-layer-group text-xs ${isActive ? 'text-indigo-400' : 'text-gray-500'}"></i>
+            </div>
+            <div class="flex-1 min-w-0" id="wsNameCell-${ws.id}">
+              <span class="text-sm font-medium block truncate ${isActive ? 'text-white' : 'text-gray-300'}">${escapeHtml(ws.name)}</span>
+              ${isActive
+                ? '<span class="text-[10px] text-indigo-400">使用中</span>'
+                : `<button onclick="switchWorkspace('${ws.id}')"
+                     class="text-[10px] text-gray-600 hover:text-indigo-400 transition-colors">切り替える</button>`}
+            </div>
+            <div class="flex items-center gap-0.5 flex-shrink-0">
+              <button onclick="startRenameWs('${ws.id}')" title="名前変更"
+                class="p-1.5 rounded-lg text-gray-600 hover:text-indigo-400 hover:bg-indigo-500/10 transition">
+                <i class="fas fa-pen text-[10px]"></i>
+              </button>
+              <button onclick="deleteWorkspace('${ws.id}')" title="削除"
+                class="p-1.5 rounded-lg transition ${isOnly ? 'text-gray-700 cursor-not-allowed' : 'text-gray-600 hover:text-red-400 hover:bg-red-400/10'}"
+                ${isOnly ? 'disabled' : ''}>
+                <i class="fas fa-trash-can text-[10px]"></i>
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function startRenameWs(id) {
+      const cell = document.getElementById('wsNameCell-' + id);
+      if (!cell) return;
+      const ws = WORKSPACES.find(w => w.id === id);
+      if (!ws) return;
+      cell.innerHTML = `
+        <div class="flex items-center gap-1.5">
+          <input id="wsRenameInput" type="text" value="${escapeHtml(ws.name)}" maxlength="40"
+            class="flex-1 bg-[#13111e] border border-indigo-500/40 rounded-lg px-2 py-1
+                   text-sm text-gray-200 outline-none min-w-0"
+            style="font-family:inherit;"
+            onkeydown="if(event.key==='Enter')confirmRenameWs('${id}');else if(event.key==='Escape')renderWsModalList();" />
+          <button onclick="confirmRenameWs('${id}')"
+            class="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 flex-shrink-0">保存</button>
+          <button onclick="renderWsModalList()"
+            class="text-[11px] text-gray-500 hover:text-gray-300 flex-shrink-0">取消</button>
+        </div>`;
+      document.getElementById('wsRenameInput')?.focus();
+    }
+
+    function confirmRenameWs(id) {
+      const inp = document.getElementById('wsRenameInput');
+      if (!inp) return;
+      const name = inp.value.trim();
+      if (!name) { showToast('名前を入力してください', 'warn'); return; }
+      const ws = WORKSPACES.find(w => w.id === id);
+      if (!ws) return;
+      ws.name = name;
+      saveWorkspaces();
+      renderWsModalList();
+      renderWsOptions();
+      showToast('名前を変更しました');
+    }
+
+    function openWsModal() {
+      const modal = document.getElementById('wsModal');
+      if (!modal) return;
+      const inp = document.getElementById('wsNewNameInput');
+      if (inp) inp.value = '';
+      renderWsModalList();
+      modal.classList.remove('hidden');
+    }
+
+    function closeWsModal() {
+      document.getElementById('wsModal')?.classList.add('hidden');
+    }
+
+    function confirmCreateWorkspace() {
+      const inp = document.getElementById('wsNewNameInput');
+      if (!inp) return;
+      const name = inp.value.trim();
+      if (!name) { showToast('ワークスペース名を入力してください', 'warn'); return; }
+      const id = generateId();
+      WORKSPACES.push({ id, name, createdAt: new Date().toISOString() });
+      saveWorkspaces();
+      // 新WSは空データで初期化（デフォルト種別は引き継ぐ）
+      localStorage.setItem('dw_projects__' + id, '[]');
+      localStorage.setItem('dw_projectTypes__' + id, JSON.stringify([...DEFAULT_PROJECT_TYPES]));
+      inp.value = '';
+      renderWsModalList();
+      renderWsOptions();
+      showToast(`「${name}」を作成しました`);
+    }
+
+    function deleteWorkspace(id) {
+      if (WORKSPACES.length <= 1) { showToast('最後のワークスペースは削除できません', 'error'); return; }
+      const ws = WORKSPACES.find(w => w.id === id);
+      if (!ws) return;
+      if (!confirm(`「${ws.name}」を削除しますか？\n案件データもすべて失われます。`)) return;
+      WORKSPACES = WORKSPACES.filter(w => w.id !== id);
+      saveWorkspaces();
+      localStorage.removeItem('dw_projects__' + id);
+      localStorage.removeItem('dw_projectTypes__' + id);
+      if (id === activeWorkspaceId) {
+        closeWsModal();
+        switchWorkspace(WORKSPACES[0].id);
+        return;
+      }
+      renderWsModalList();
+      renderWsOptions();
+      showToast(`「${ws.name}」を削除しました`);
+    }
+
+    function switchWorkspace(id) {
+      if (id === activeWorkspaceId) { closeWsModal(); return; }
+      activeWorkspaceId = id;
+      localStorage.setItem('dw_activeWorkspaceId', activeWorkspaceId);
+      // 新WSのデータを読み込み
+      PROJECTS      = loadProjectsFromStorage() || JSON.parse(JSON.stringify(DEFAULT_PROJECTS));
+      PROJECT_TYPES = loadTypesFromStorage()    || [...DEFAULT_PROJECT_TYPES];
+      complementTimestamps();
+      doneGroupOpen = loadDoneGroupOpen();
+      // 状態リセット
+      projectsQuery = '';
+      closeDrawer();
+      closeWsModal();
+      renderWsOptions();
+      // 現在ページを再描画
+      navigate(currentPage);
+      const ws = WORKSPACES.find(w => w.id === id);
+      if (ws) showToast(`「${ws.name}」に切り替えました`);
     }
 
     // ── Tabs ────────────────────────────────────────────────────
@@ -1181,6 +1835,11 @@
 
       saveProjectsToStorage();
       refreshProjectsTable();
+      // ホームページ表示中は再描画
+      if (currentPage === 'home') {
+        const area = document.getElementById('pageArea');
+        if (area) area.innerHTML = renderHome();
+      }
       showToast('保存しました');
       closeDrawer();
     }
@@ -1218,10 +1877,10 @@
 
     // ── Init ───────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
-      homeHTML = document.getElementById('pageArea').innerHTML;
-
       applyDark();
       setHeaderDate();
+      renderWsOptions();
+      navigate('home'); // 動的ホームを初期描画
 
       document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', e => {
@@ -1240,7 +1899,7 @@
       document.getElementById('mobileMenuBtn')?.addEventListener('click', openSidebar);
 
       document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') closeDrawer();
+        if (e.key === 'Escape') { closeDrawer(); closeWsModal(); }
       });
     });
   </script>
